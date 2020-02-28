@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Import configuration
-. scripts/.env
+. ./main/.env
 
 printf "\n--> Packaging and uploading templates to the %s S3 bucket ...\n" $BUCKET_NAME
 
