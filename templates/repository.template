@@ -1,0 +1,121 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: Provides configuration for a Deadline database and repository instance.
+
+Parameters:
+  VpcID:
+    Type: AWS::EC2::VPC::Id
+
+  PrivateSubnet1:
+    Type: AWS::EC2::Subnet::Id
+
+  InstanceType:
+    Type: String
+
+  InstanceAMI:
+    Type: AWS::EC2::Image::Id
+    Description: Which Render Scheduler AMI do you want to use?
+
+  Environment:
+    Type: String
+
+  EC2InstanceProfile:
+    Type: String
+
+Resources:
+  RepositorySecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for Repository instance
+      VpcId: !Ref VpcID
+      Tags:
+        - Key: Name
+          Value: deadline-repository-sg
+        - Key: Environment
+          Value: !Ref Environment
+
+  RepositoryInstance:
+    Type: AWS::EC2::Instance
+    Metadata:
+      AWS::CloudFormation::Init:
+        config:
+          packages:
+            yum:
+              jq: []
+              awscli: []
+          files:
+            /opt/scripts/ec2-mount-ebs-volume.sh:
+              source: https://aws-digital-content-creation-render-environment.s3.amazonaws.com/version/ec2-mount-ebs-volume.sh
+              mode: '000755'
+              owner: root
+              group: root
+            /etc/cfn/cfn-hup.conf:
+              content: !Sub |
+                [main]
+                stack=${AWS::StackId}
+                region=${AWS::Region}
+                interval=1
+              mode: '000400'
+              owner: root
+              group: root
+            /etc/cfn/hooks.d/cfn-auto-reloader.conf:
+              content: !Sub |
+                [cfn-auto-reloader-hook]
+                triggers=post.update
+                path=Resources.RepositoryInstance.Metadata.AWS::CloudFormation::Init
+                action=/opt/aws/bin/cfn-init --stack ${AWS::StackName} --resource RepositoryInstance --region ${AWS::Region}
+                runas=root
+          commands:
+            01-mount-ebs-volume:
+              command: sh /opt/scripts/ec2-mount-ebs-volume.sh > /opt/scripts/ec2-mount-ebs-volume.log 2>&1
+              test: test -x /opt/scripts/ec2-mount-ebs-volume.sh  # check if filename exists and is executable
+              ignoreErrors: false
+          services:
+            sysvinit:
+              cfn-hup:
+                enabled: true
+                ensureRunning: true
+                files:
+                  - /etc/cfn/cfn-hup.conf
+                  - /etc/cfn/hooks.d/cfn-auto-reloader.conf
+    Properties:
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvdh
+          Ebs:
+            VolumeSize: 30
+            VolumeType: gp2
+            Encrypted: true
+            DeleteOnTermination: true
+      IamInstanceProfile: !Ref EC2InstanceProfile
+      ImageId: !Ref InstanceAMI
+      InstanceType: !Ref InstanceType
+      SecurityGroupIds:
+        - !Ref RepositorySecurityGroup
+      SubnetId: !Ref PrivateSubnet1
+      Tags:
+        - Key: Name
+          Value: deadline-repository
+        - Key: Environment
+          Value: !Ref Environment
+      UserData:
+        Fn::Base64:
+          !Sub |
+          #!/bin/bash -xe
+          # Update aws-cfn-bootstrap to the latest
+          yum install -y aws-cfn-bootstrap
+          # Call cfn-init script to install files and packages
+          /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource RepositoryInstance --region ${AWS::Region}
+          # Call cfn-signal script to send a signal with exit code
+          /opt/aws/bin/cfn-signal --exit-code $? --stack ${AWS::StackName} --resource RepositoryInstance --region ${AWS::Region}
+
+    CreationPolicy:
+      ResourceSignal:
+        Count: 1
+        Timeout: "PT15M"
+
+Outputs:
+  RepositorySecurityGroup:
+    Value: !Ref RepositorySecurityGroup
+
+  RepositoryInstancePrivateIp:
+    Value: !GetAtt RepositoryInstance.PrivateIp
