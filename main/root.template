@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: AWS Digital Content Creation Architecture - AWS ThinkBox Deadline. (TODO)
+Description: AWS Digital Content Creation Architecture - AWS ThinkBox Deadline. (uksb-1qgdqu75l)
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -109,14 +109,39 @@ Mappings:
   AMIRegionMap:
     us-east-1:
       NICEDCV: ami-07518881491131823
+
+    us-east-2:
+      NICEDCV: ami-0879dc7a6c4d1e6db
+
     us-west-1:
-      NICEDCV: "ami-0bdb828fd58c52235"
-    eu-west-1:
-      NICEDCV: "ami-047bb4163c506cd98"
-    ap-southeast-1:
-      NICEDCV: "ami-08569b978cc4dfa10"
+      NICEDCV: ami-07b60144ca51e5cfe
+
+    us-west-2:
+      NICEDCV: ami-002a233b37206a269
+
     ap-northeast-1:
-      NICEDCV: "ami-06cd52961ce9f0d85"
+      NICEDCV: ami-0dec805ab1bd36aba
+
+    ap-northeast-2:
+      NICEDCV: ami-0bbedf77cc9675e17
+
+    ap-south-1:
+      NICEDCV: ami-0ec5a5a7fb3e1385d
+
+    ap-southeast-1:
+      NICEDCV: ami-0ab0206f56fc9996c
+
+    ap-southeast-2:
+      NICEDCV: ami-01010fe90ef401d4f
+
+    eu-central-1:
+      NICEDCV: ami-03d479014c2c2f8d8
+
+    eu-west-1:
+      NICEDCV: ami-02060b15ad43c10eb
+
+    eu-west-2:
+      NICEDCV: ami-04410ec306a9ed0c2
 
 Resources:
   IAMStack:
@@ -145,7 +170,7 @@ Resources:
   RepositoryStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: ../template/repository.template
+      TemplateURL: ../templates/repository.template
       TimeoutInMinutes: 30
       Parameters:
         VpcID: !GetAtt VPCStack.Outputs.VpcID
