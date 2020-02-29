@@ -113,43 +113,62 @@ Parameters:
       - PROD
     Default: DEV
 
+  AppVersion:
+    Type: String
+    AllowedValues:
+      - 10.1.3.6
+      - 10.0.24.4
+    Default: 10.1.3.6
+
 Mappings:
   AMIRegionMap:
     us-east-1:
       NICEDCV: ami-07518881491131823
+      AMZL2: ami-0a887e401f7654935
 
     us-east-2:
       NICEDCV: ami-0879dc7a6c4d1e6db
+      AMZL2: ami-0e38b48473ea57778
 
     us-west-1:
       NICEDCV: ami-07b60144ca51e5cfe
+      AMZL2: ami-01c94064639c71719
 
     us-west-2:
       NICEDCV: ami-002a233b37206a269
+      AMZL2: ami-0e8c04af2729ff1bb
 
     ap-northeast-1:
       NICEDCV: ami-0dec805ab1bd36aba
+      AMZL2: ami-0af1df87db7b650f4
 
     ap-northeast-2:
       NICEDCV: ami-0bbedf77cc9675e17
+      AMZL2: ami-0a93a08544874b3b7
 
     ap-south-1:
       NICEDCV: ami-0ec5a5a7fb3e1385d
+      AMZL2: ami-0d9462a653c34dab7
 
     ap-southeast-1:
       NICEDCV: ami-0ab0206f56fc9996c
+      AMZL2: ami-0f02b24005e4aec36
 
     ap-southeast-2:
       NICEDCV: ami-01010fe90ef401d4f
+      AMZL2: ami-0f767afb799f45102
 
     eu-central-1:
       NICEDCV: ami-03d479014c2c2f8d8
+      AMZL2: ami-0df0e7600ad0913a9
 
     eu-west-1:
       NICEDCV: ami-02060b15ad43c10eb
+      AMZL2: ami-099a8245f5daa82bf
 
     eu-west-2:
       NICEDCV: ami-04410ec306a9ed0c2
+      AMZL2: ami-0389b2a3c4948b1a0
 
 Resources:
   IAMStack:
@@ -184,9 +203,10 @@ Resources:
         VpcID: !GetAtt VPCStack.Outputs.VpcID
         PrivateSubnet1: !GetAtt VPCStack.Outputs.PublicSubnet1
         InstanceType: !Ref InstanceType
-        InstanceAMI: !FindInMap [AMIRegionMap, !Ref 'AWS::Region', NICEDCV]
+        InstanceAMI: !FindInMap [AMIRegionMap, !Ref 'AWS::Region', AMZL2]
         Environment: !Ref Environment
         EC2InstanceProfile: !GetAtt IAMStack.Outputs.EC2InstanceProfile
+        AppVersion: !Ref AppVersion
 
 Outputs:
   TemplateType:

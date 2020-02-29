@@ -22,6 +22,9 @@ Parameters:
   EC2InstanceProfile:
     Type: String
 
+  AppVersion:
+    Type: String
+
 Resources:
   RepositorySecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -38,17 +41,41 @@ Resources:
     Type: AWS::EC2::Instance
     Metadata:
       AWS::CloudFormation::Init:
-        config:
+        configSets:
+          dcc_install:
+            - instance_prep
+            - artefacts_download
+            - app_install
+        instance_prep:
           packages:
             yum:
               jq: []
-              awscli: []
+              samba: []
           files:
             /opt/scripts/ec2-mount-ebs-volume.sh:
               source: https://aws-digital-content-creation-render-environment.s3.amazonaws.com/version/ec2-mount-ebs-volume.sh
               mode: '000755'
               owner: root
               group: root
+            /etc/samba/smb.conf:
+              content: |
+                [global]
+                  workgroup = SAMBA
+                  security = user
+                  passdb backend = tdbsam
+                  printing = cups
+                  printcap name = cups
+                  load printers = yes
+                  cups options = raw
+                [DeadlineRepository]
+                  path = /data/Thinkbox/DeadlineRepository10
+                  writeable = Yes
+                  guest ok = No
+                  create mask = 0700
+                  force create mode = 0700
+                  force directory mode = 0700
+                  unix extensions = No
+              mode: '000755'
             /etc/cfn/cfn-hup.conf:
               content: !Sub |
                 [main]
@@ -72,17 +99,42 @@ Resources:
               ignoreErrors: false
           services:
             sysvinit:
+              smb:
+                enabled: true
+                ensureRunning: true
               cfn-hup:
                 enabled: true
                 ensureRunning: true
                 files:
                   - /etc/cfn/cfn-hup.conf
                   - /etc/cfn/hooks.d/cfn-auto-reloader.conf
+        artefacts_download:
+          sources:
+            /data/thinkbox: !Sub https://aws-digital-content-creation-render-environment.s3.amazonaws.com/version/Deadline-${AppVersion}-linux-installers.tar
+        app_install:
+          users:
+            deadlineuser: {}
+          commands:
+            01-install_repository:
+              command: ls /data/thinkbox | grep DeadlineRepository |
+                (read repo; /data/thinkbox/$repo
+                --mode unattended
+                --prefix "/data/thinkbox/DeadlineRepository10"
+                --installmongodb true
+                --mongodir "/data/thinkbox/DeadlineDatabase10"
+                --requireSSL false)
+              ignoreErrors: false
+            set_repo_permissions:
+              command: |
+                chown -R deadlineuser:nobody /data/thinkbox/DeadlineRepository10
+                chmod -R 500 /data/thinkbox/DeadlineRepository10
+                cd /data/thinkbox/DeadlineRepository10 && chmod -R 700 jobs/ jobsArchived/ reports/
+              ignoreErrors: false
     Properties:
       BlockDeviceMappings:
         - DeviceName: /dev/xvdh
           Ebs:
-            VolumeSize: 30
+            VolumeSize: 35
             VolumeType: gp2
             Encrypted: true
             DeleteOnTermination: true
@@ -104,10 +156,9 @@ Resources:
           # Update aws-cfn-bootstrap to the latest
           yum install -y aws-cfn-bootstrap
           # Call cfn-init script to install files and packages
-          /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource RepositoryInstance --region ${AWS::Region}
+          /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource RepositoryInstance --configsets dcc_install --region ${AWS::Region}
           # Call cfn-signal script to send a signal with exit code
           /opt/aws/bin/cfn-signal --exit-code $? --stack ${AWS::StackName} --resource RepositoryInstance --region ${AWS::Region}
-
     CreationPolicy:
       ResourceSignal:
         Count: 1
@@ -119,3 +170,6 @@ Outputs:
 
   RepositoryInstancePrivateIp:
     Value: !GetAtt RepositoryInstance.PrivateIp
+
+  DeadlineVersion:
+    Value: !Ref AppVersion
