@@ -1,33 +1,36 @@
 language: python
 python:
-- 3.8.1
+  - 3.8.1
+env:
+  global:
+    secure: GXFzyFdtb0xu7LgobF4mQNzpmW1UOkaGTPDoRSydMtKB3nTJyfH6sh0UzUGobiIhvB/Xu1emk5J3IqyeORWVrJhIJ/3HwZQaAF9CEZI+kcd35NhAJo6hrwBFlYzwiFTGZagDLihilKYBPp/JbUihvm9SFjveEZskWq/5Cb4+zjIyytkxB/Aw9SNUFtmZWxZpkLDmvpBlw1pxMtX9zgwW560d3CYR0k4tCoMgjpgqE4uWcNyQ8SA9P0RLo888BBBZmdw8MINu/iE2OIIg/H/B3sCtZtGDaQcwLNxucYjvRZsHuYC6U2i1uF8A9S6vwADOnnYi64eE3SRfkoezTn9V0Jjrj9M4j0jEKDJFuBOBRpRBHfMCUJZxXM5C0zjyZVqNEq/np5/M2/u4a5sAEnnufHFisx03qy/xlkhI1RYqMk6aMlI8HhB5YJeHtDiybNT2RbqL37xImWZIjKgyXdR1HohvE/8/+dIECdGOuCQvMaOT4c7/MnJJeUnC9juq4MBgor6phsn9Kks1ay04i/C/jnb6xTEByo8xa8d14leEUUMSedaeJ+cWLFqX9Nhzs7QTPcKl6biLenLS25+FxxUv4ZdN5nTWGZb+9Qm0UCCuaEQEK23z3j+/UAjYrhhp7VgWasNmoy5Cyd/QcUFEZahLqTJha3syKxidtPcfk/t1Xts=
 before_script:
-- python --version
-- pip install -r requirements.txt
+  - python --version
+  - pip install -r requirements.txt
 script:
-- |
-  if [ $TRAVIS_PULL_REQUEST == true ] && [ $TRAVIS_BRANCH != "master" ]; then
-    VERSION="v$(cat main/root.template | shyaml get-value Globals.Function.Environment.Variables.VERSION)"
-    git tag $VERSION
-  fi
+  - |
+    if [ $TRAVIS_PULL_REQUEST == true ] && [ $TRAVIS_BRANCH != "master" ]; then
+      VERSION="v$(cat main/root.template | shyaml get-value Globals.Function.Environment.Variables.VERSION)"
+      git tag $VERSION
+    fi
 before_deploy:
-- VERSION="v$(cat main/root.template | shyaml get-value Globals.Function.Environment.Variables.VERSION)"
-- if [ -z "$TRAVIS_TAG" ]; then git tag $VERSION; fi
-- zip -r "$VERSION.zip" -@ < ci/include.lst
+  - VERSION="v$(cat main/root.template | shyaml get-value Globals.Function.Environment.Variables.VERSION)"
+  - if [ -z "$TRAVIS_TAG" ]; then git tag $VERSION; fi
+  - zip -r "$VERSION.zip" -@ < ci/include.lst
 deploy:
-- provider: releases
-  api_key:
-    secure: qHZuawzAA7/kqBAauD35Tf0l2OCOnmLlUJMFBNyi/vBdJ/tjCnHvdxBR0c+hcW8qegMy5pdlE9ERLV8liKWD1+xg2X94rQuQYuFaT1Eof+hdJjlw1OPjpcHHJ64K1mpLtwrGbn4e32xSazptvjdydDAmUssK85mQEXZ0GMJb1iV9qBmaUM4b2UW38VG27dK4QircSx9Ych17Y7AHqm+XSB64RrHX5OpnufJ+2rSWgqXXJOvFGnehlnqynzYAFwEaOH+ayYeZz8xFEwWt+zeK2kJUWDyswZ3ZJjngkNkFUJk9CbiubarYOGfKqeVgnXyxwS2+XuI49QIqw6nJ4ptD6rJ2iPA+WMEZtr82jKZ+AbR/LNfM7ARaGdb+R+xBz9uVQ50p8/EdnZ3sxEpdo/h14UQ1/qXhiu7QZJYsTp7jr9+oHGWnCtAMUVlXYDOrRG0orxZKwTBnF3jGmWGDmAMc/3FsIe66ZCkI7wTYZBkolUyIuH7VasG2JH698tucQETJWuKbT9r7JvwFahBBhDW/Ks88nRHwG2Welx5ltXp23aflU/EaHpDd+DBgMV+nb05ectQURdOsWpPYkbDhdARhoCtqryqJoxHTo45xAjsME3t1ijlcnYhrZSsVDQ9IZ5RbGKFw0KRpZy46wfrIHYdXcRu+Fl6bcEmq7vWw8Sh4a3Y=
-  file: "$VERSION.zip"
-  skip_cleanup: true
-  on:
-    branch: master
-    condition: type != pull_request
-- provider: script
-  script: aws s3 cp ./$VERSION.zip s3://$CFN_BUCKET/aws-digital-content-creation-render-environment/$VERSION/aws-digital-content-creation-render-environment.zip
-  skip_cleanup: true
-  on:
-    tags: true
+  - provider: releases
+    api_key:
+      secure: "$GITHUB_TOKEN"
+    file: "$VERSION.zip"
+    skip_cleanup: true
+    on:
+      branch: master
+      condition: type != pull_request
+  - provider: script
+    script: aws s3 cp ./$VERSION.zip s3://$CFN_BUCKET/aws-digital-content-creation-render-environment/$VERSION/aws-digital-content-creation-render-environment.zip
+    skip_cleanup: true
+    on:
+      tags: true
 notifications:
   email: false
 cache: pip
