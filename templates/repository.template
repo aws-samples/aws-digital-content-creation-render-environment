@@ -25,6 +25,10 @@ Parameters:
   AppVersion:
     Type: String
 
+  SambaPassword:
+    Type: String
+    NoEcho: true
+
 Resources:
   RepositorySecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -51,9 +55,11 @@ Resources:
             yum:
               jq: []
               samba: []
+          users:
+            deadlineuser: {}
           files:
             /opt/scripts/ec2-mount-ebs-volume.sh:
-              source: https://aws-digital-content-creation-render-environment.s3.amazonaws.com/version/ec2-mount-ebs-volume.sh
+              source: https://aws-digital-content-creation-render-environment.s3.amazonaws.com/ec2-mount-ebs-volume.sh
               mode: '000755'
               owner: root
               group: root
@@ -68,7 +74,7 @@ Resources:
                   load printers = yes
                   cups options = raw
                 [DeadlineRepository]
-                  path = /data/Thinkbox/DeadlineRepository10
+                  path = /data/thinkbox/DeadlineRepository10
                   writeable = Yes
                   guest ok = No
                   create mask = 0700
@@ -90,30 +96,38 @@ Resources:
                 [cfn-auto-reloader-hook]
                 triggers=post.update
                 path=Resources.RepositoryInstance.Metadata.AWS::CloudFormation::Init
-                action=/opt/aws/bin/cfn-init --stack ${AWS::StackName} --resource RepositoryInstance --region ${AWS::Region}
+                action=/opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource RepositoryInstance --configsets dcc_install --region ${AWS::Region}
                 runas=root
+              mode: '000400'
+              owner: root
+              group: root
           commands:
             01-mount-ebs-volume:
               command: sh /opt/scripts/ec2-mount-ebs-volume.sh > /opt/scripts/ec2-mount-ebs-volume.log 2>&1
               test: test -x /opt/scripts/ec2-mount-ebs-volume.sh  # check if filename exists and is executable
               ignoreErrors: false
+            02-samba_user:
+              command: !Sub echo ${SambaPassword} | tee - | smbpasswd -s -a deadlineuser
           services:
             sysvinit:
               smb:
                 enabled: true
                 ensureRunning: true
+                files:
+                  - /etc/samba/smb.conf
               cfn-hup:
                 enabled: true
                 ensureRunning: true
                 files:
                   - /etc/cfn/cfn-hup.conf
                   - /etc/cfn/hooks.d/cfn-auto-reloader.conf
+              amazon-ssm-agent:
+                enabled: true
+                ensureRunning: true
         artefacts_download:
           sources:
-            /data/thinkbox: !Sub https://aws-digital-content-creation-render-environment.s3.amazonaws.com/version/Deadline-${AppVersion}-linux-installers.tar
+            /data/thinkbox: !Sub https://aws-digital-content-creation-render-environment.s3.amazonaws.com/Deadline-${AppVersion}-linux-installers.tar
         app_install:
-          users:
-            deadlineuser: {}
           commands:
             01-install_repository:
               command: ls /data/thinkbox | grep DeadlineRepository |
@@ -123,8 +137,8 @@ Resources:
                 --installmongodb true
                 --mongodir "/data/thinkbox/DeadlineDatabase10"
                 --requireSSL false)
-              ignoreErrors: false
-            set_repo_permissions:
+              ignoreErrors: true
+            02-set_repo_permissions:
               command: |
                 chown -R deadlineuser:nobody /data/thinkbox/DeadlineRepository10
                 chmod -R 500 /data/thinkbox/DeadlineRepository10
@@ -155,6 +169,9 @@ Resources:
           #!/bin/bash -xe
           # Update aws-cfn-bootstrap to the latest
           yum install -y aws-cfn-bootstrap
+          # !!!Warning: issue with en/disabling SELinux in enforcing mode on the latest Amazon Linux 2 AMIs with version numbers 20191014 and 20191024
+          # sed -i 's/enforcing/disabled/g' /etc/selinux/config /etc/selinux/config
+          # sudo setenforce 0
           # Call cfn-init script to install files and packages
           /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource RepositoryInstance --configsets dcc_install --region ${AWS::Region}
           # Call cfn-signal script to send a signal with exit code
