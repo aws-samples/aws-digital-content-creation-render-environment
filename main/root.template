@@ -97,7 +97,7 @@ Parameters:
     Type: String
     Description: Render scheduler instance type
     Default: m5.xlarge
-    
+
   SambaPassword:
     Type: String
     Description: Samba password for deadlineuser account used to connect to repository.
@@ -216,7 +216,7 @@ Resources:
         InstanceType: !Ref RepositoryInstanceType
         InstanceAMI: !FindInMap [AMIRegionMap, !Ref 'AWS::Region', AMZL2]
         EC2InstanceProfile: !GetAtt IAMStack.Outputs.EC2InstanceProfile
-        SambaPassword: !Ref SambaPassword
+        SambaPassword: !Ref SambaPassword #pragma: allowlist secret
         AppVersion: !Ref AppVersion
         Environment: !Ref Environment
 
