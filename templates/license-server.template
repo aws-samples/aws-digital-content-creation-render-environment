@@ -1,12 +1,11 @@
----
 AWSTemplateFormatVersion: 2010-09-09
-Description: Provides configuration for a Deadline database and repository instance.
+Description: Provides configuration for a Deadline license server instance.
 
 Parameters:
   VpcID:
     Type: AWS::EC2::VPC::Id
 
-  PrivateSubnet1:
+  PublicSubnet1:
     Type: AWS::EC2::Subnet::Id
 
   InstanceType:
@@ -15,35 +14,35 @@ Parameters:
   InstanceAMI:
     Type: AWS::EC2::Image::Id
 
+  Environment:
+    Type: String
+
   EC2InstanceProfile:
     Type: String
 
-  AppVersion:
+  LicenseServerVersion:
     Type: String
 
-  SambaPassword:
+  DeadlineLicense:
     Type: String
     NoEcho: true
 
   ArtefactBucketName:
     Type: String
 
-  Environment:
-    Type: String
-
 Resources:
-  RepositorySecurityGroup:
+  LicenseServerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Security group for Repository instance
+      GroupDescription: Security group for license server instance
       VpcId: !Ref VpcID
       Tags:
         - Key: Name
-          Value: deadline-repository-sg
+          Value: license-server-sg
         - Key: Environment
           Value: !Ref Environment
 
-  RepositoryInstance:
+  LicenseServerInstance:
     Type: AWS::EC2::Instance
     Metadata:
       AWS::CloudFormation::Init:
@@ -53,11 +52,6 @@ Resources:
             - artefacts_download
             - app_install
         instance_prep:
-          packages:
-            yum:
-              samba: []
-          users:
-            deadlineuser: {}
           files:
             /opt/scripts/ec2-mount-ebs-volume.sh:
               content: |
@@ -68,28 +62,7 @@ Resources:
                 e2label $(readlink -f /dev/xvdh) dcc-data
                 grep -q ^LABEL=dcc-data /etc/fstab || echo 'LABEL=dcc-data /var/data ext4 defaults' >> /etc/fstab
                 grep -q "^$(readlink -f /dev/xvdh) /var/data " /proc/mounts || mount /var/data
-              mode: '000755'
-              owner: root
-              group: root
-            /etc/samba/smb.conf:
-              content: |
-                [global]
-                  workgroup = SAMBA
-                  security = user
-                  passdb backend = tdbsam
-                  printing = cups
-                  printcap name = cups
-                  load printers = yes
-                  cups options = raw
-                [DeadlineRepository]
-                  path = /data/thinkbox/DeadlineRepository10
-                  writeable = Yes
-                  guest ok = No
-                  create mask = 0700
-                  force create mode = 0700
-                  force directory mode = 0700
-                  unix extensions = No
-              mode: '000755'
+
             /etc/cfn/cfn-hup.conf:
               content: !Sub |
                 [main]
@@ -103,8 +76,8 @@ Resources:
               content: !Sub |
                 [cfn-auto-reloader-hook]
                 triggers=post.update
-                path=Resources.RepositoryInstance.Metadata.AWS::CloudFormation::Init
-                action=/opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource RepositoryInstance --configsets dcc_install --region ${AWS::Region}
+                path=Resources.LicenseServerInstance.Metadata.AWS::CloudFormation::Init
+                action=/opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource LicenseServerInstance --configsets dcc_install --region ${AWS::Region}
                 runas=root
               mode: '000400'
               owner: root
@@ -114,15 +87,8 @@ Resources:
               command: sh /opt/scripts/ec2-mount-ebs-volume.sh > /opt/scripts/ec2-mount-ebs-volume.log 2>&1
               test: test -x /opt/scripts/ec2-mount-ebs-volume.sh  # check if filename exists and is executable
               ignoreErrors: false
-            02-samba_user:
-              command: !Sub echo ${SambaPassword} | tee - | smbpasswd -s -a deadlineuser
           services:
             sysvinit:
-              smb:
-                enabled: true
-                ensureRunning: true
-                files:
-                  - /etc/samba/smb.conf
               cfn-hup:
                 enabled: true
                 ensureRunning: true
@@ -134,29 +100,26 @@ Resources:
                 ensureRunning: true
         artefacts_download:
           sources:
-            /data/thinkbox: !Sub https://${ArtefactBucketName}.s3.amazonaws.com/Deadline-${AppVersion}-linux-installers.tar
+            /data/thinkbox: !Sub https://${ArtefactBucketName}.s3.amazonaws.com/ThinkboxLicenseServer-${LicenseServerVersion}-linux-x64-installer.zip
         app_install:
+          files:
+            /data/thinkbox/license.lic:
+              content: !Sub |
+                ${DeadlineLicense}
           commands:
-            01-install_repository:
-              command: ls /data/thinkbox | grep DeadlineRepository |
-                (read repo; /data/thinkbox/$repo
-                --mode unattended
-                --prefix "/data/thinkbox/DeadlineRepository10"
-                --installmongodb true
-                --mongodir "/data/thinkbox/DeadlineDatabase10"
-                --requireSSL false)
+            01-set_permissions:
+              command: chmod 500 /data/thinkbox/ThinkboxLicenseServer*
+            02-install_license_server:
+              command: ls /data/thinkbox | grep ThinkboxLicenseServer |
+                (read data; /data/thinkbox/$data
+                --mode text
+                --licenseFile /data/thinkbox/license.lic)
               ignoreErrors: true
-            02-set_repo_permissions:
-              command: |
-                chown -R deadlineuser:nobody /data/thinkbox/DeadlineRepository10
-                chmod -R 500 /data/thinkbox/DeadlineRepository10
-                cd /data/thinkbox/DeadlineRepository10 && chmod -R 700 jobs/ jobsArchived/ reports/
-              ignoreErrors: false
     Properties:
       BlockDeviceMappings:
         - DeviceName: /dev/xvdh
           Ebs:
-            VolumeSize: 35
+            VolumeSize: 20
             VolumeType: gp2
             Encrypted: true
             DeleteOnTermination: true
@@ -164,11 +127,11 @@ Resources:
       ImageId: !Ref InstanceAMI
       InstanceType: !Ref InstanceType
       SecurityGroupIds:
-        - !Ref RepositorySecurityGroup
-      SubnetId: !Ref PrivateSubnet1
+        - !Ref LicenseServerSecurityGroup
+      SubnetId: !Ref PublicSubnet1
       Tags:
         - Key: Name
-          Value: deadline-repository
+          Value: deadline-license-server
         - Key: Environment
           Value: !Ref Environment
       UserData:
@@ -177,24 +140,21 @@ Resources:
           #!/bin/bash -xe
           # Update aws-cfn-bootstrap to the latest
           yum install -y aws-cfn-bootstrap
-          # !!!Warning: issue with en/disabling SELinux in enforcing mode on the latest Amazon Linux 2 AMIs with version numbers 20191014 and 20191024
-          # sed -i 's/enforcing/disabled/g' /etc/selinux/config /etc/selinux/config
-          # sudo setenforce 0
           # Call cfn-init script to install files and packages
-          /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource RepositoryInstance --configsets dcc_install --region ${AWS::Region}
+          /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource LicenseServerInstance --configsets dcc_install --region ${AWS::Region}
           # Call cfn-signal script to send a signal with exit code
-          /opt/aws/bin/cfn-signal --exit-code $? --stack ${AWS::StackName} --resource RepositoryInstance --region ${AWS::Region}
+          /opt/aws/bin/cfn-signal --exit-code $? --stack ${AWS::StackName} --resource LicenseServerInstance --region ${AWS::Region}
     CreationPolicy:
       ResourceSignal:
         Count: 1
-        Timeout: "PT15M"
+        Timeout: "PT10M"
 
 Outputs:
-  RepositorySecurityGroup:
-    Value: !Ref RepositorySecurityGroup
+  LicenseServerSecurityGroup:
+    Value: !Ref LicenseServerSecurityGroup
 
   RepositoryInstancePrivateIp:
-    Value: !GetAtt RepositoryInstance.PrivateIp
+    Value: !GetAtt LicenseServerInstance.PrivateIp
 
-  DeadlineVersion:
-    Value: !Ref AppVersion
+  DeadlineLicense:
+    Value: !Ref DeadlineLicense

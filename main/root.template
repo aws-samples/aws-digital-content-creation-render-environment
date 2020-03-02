@@ -25,10 +25,17 @@ Metadata:
           - VPCPrivateSubnet1Cidr
           - VPCPrivateSubnet2Cidr
       - Label:
-          default: Repository and Database configuration
+          default: Repository and database configuration
         Parameters:
           - RepositoryInstanceType
           - SambaPassword
+          - AppVersion
+      - Label:
+          default: License server configuration
+        Parameters:
+          - LicenseServerInstanceType
+          - LicenseServerVersion
+          - DeadlineLicense
     ParameterLabels:
       AvailabilityZones:
         default: Availability Zones
@@ -47,7 +54,9 @@ Metadata:
       RepositoryInstanceType:
         default: Render scheduler instance type
       SambaPassword:
-        default: Samba password for deadlineuser account used to connect to repository.
+        default: Samba password
+      AppVersion:
+        default: Deadline application version
 
 Parameters:
   AvailabilityZones:
@@ -117,10 +126,30 @@ Parameters:
 
   AppVersion:
     Type: String
+    Description: Deadline application vesion.
     AllowedValues:
       - 10.1.3.6
       - 10.0.24.4
     Default: 10.1.3.6
+
+  LicenseServerInstanceType:
+    Type: String
+    Description: License server instance type
+    Default: m5.xlarge
+
+  LicenseServerVersion:
+    Type: String
+    Description: License server version.
+    AllowedValues:
+      - 1.1
+      - 11.13.1.2.0
+    Default: 1.1
+
+  DeadlineLicense:
+    Type: String
+    Description: Dedline license.
+    NoEcho: true
+    Default: 123456789012
 
   Environment:
     Type: String
@@ -130,6 +159,13 @@ Parameters:
       - TEST
       - PROD
     Default: DEV
+
+  ArtefactBucketName:
+    Type: String
+    Description: S3 bucket name for the application assets.
+    AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-.]*[0-9a-zA-Z])*$
+    ConstraintDescription: S3 bucket name can include numbers, lowercase letters, uppercase letters, periods (.), and hyphens (-). It cannot start or end with a hyphen (-).
+    Default: aws-digital-content-creation-render-environment
 
 Mappings:
   AMIRegionMap:
@@ -212,12 +248,29 @@ Resources:
       TimeoutInMinutes: 30
       Parameters:
         VpcID: !GetAtt VPCStack.Outputs.VpcID
-        PrivateSubnet1: !GetAtt VPCStack.Outputs.PublicSubnet1
+        PrivateSubnet1: !GetAtt VPCStack.Outputs.PrivateSubnet1
         InstanceType: !Ref RepositoryInstanceType
         InstanceAMI: !FindInMap [AMIRegionMap, !Ref 'AWS::Region', AMZL2]
         EC2InstanceProfile: !GetAtt IAMStack.Outputs.EC2InstanceProfile
         SambaPassword: !Ref SambaPassword #pragma: allowlist secret
         AppVersion: !Ref AppVersion
+        Environment: !Ref Environment
+        ArtefactBucketName: !Ref ArtefactBucketName
+
+  LicenseServerStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ../templates/license-server.template
+      TimeoutInMinutes: 30
+      Parameters:
+        VpcID: !GetAtt VPCStack.Outputs.VpcID
+        PublicSubnet1: !GetAtt VPCStack.Outputs.PublicSubnet1
+        InstanceType: !Ref LicenseServerInstanceType
+        InstanceAMI: !FindInMap [AMIRegionMap, !Ref 'AWS::Region', AMZL2]
+        EC2InstanceProfile: !GetAtt IAMStack.Outputs.EC2InstanceProfile
+        LicenseServerVersion: !Ref LicenseServerVersion
+        DeadlineLicense: !Ref DeadlineLicense
+        ArtefactBucketName: !Ref ArtefactBucketName
         Environment: !Ref Environment
 
 Outputs:
@@ -227,5 +280,11 @@ Outputs:
   TemplateVersion:
     Value: 1.0
 
-  VPCTemplate:
+  IAMStack:
+    Value: !Ref IAMStack
+
+  VPCStack:
     Value: !Ref VPCStack
+
+  RepositoryStack:
+    Value: !Ref RepositoryStack
