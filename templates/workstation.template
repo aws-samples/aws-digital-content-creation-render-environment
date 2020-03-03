@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Provides configuration for a Deadline database and repository instance.
+Description: Provides configuration for a Deadline workstation instance.
 
 Parameters:
   VpcID:
@@ -14,35 +14,28 @@ Parameters:
   InstanceAMI:
     Type: AWS::EC2::Image::Id
 
+  Environment:
+    Type: String
+
   EC2InstanceProfile:
     Type: String
 
   AppVersion:
     Type: String
 
-  SambaPassword:
-    Type: String
-    NoEcho: true
-
-  ArtefactBucketName:
-    Type: String
-
-  Environment:
-    Type: String
-
 Resources:
-  RepositorySecurityGroup:
+  WorkstationSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Security group for repository instance
+      GroupDescription: Security group for workstation instance
       VpcId: !Ref VpcID
       Tags:
         - Key: Name
-          Value: deadline-repository-sg
+          Value: deadline-workstation-sg
         - Key: Environment
           Value: !Ref Environment
 
-  RepositoryInstance:
+  WorkstationInstance:
     Type: AWS::EC2::Instance
     Metadata:
       AWS::CloudFormation::Init:
@@ -54,7 +47,7 @@ Resources:
         instance_prep:
           packages:
             yum:
-              samba: []
+              jq: []
           users:
             deadlineuser: {}
           files:
@@ -70,40 +63,21 @@ Resources:
               mode: '000755'
               owner: root
               group: root
-            /etc/samba/smb.conf:
-              content: |
-                [global]
-                  workgroup = SAMBA
-                  security = user
-                  passdb backend = tdbsam
-                  printing = cups
-                  printcap name = cups
-                  load printers = yes
-                  cups options = raw
-                [DeadlineRepository]
-                  path = /data/thinkbox/DeadlineRepository10
-                  writeable = Yes
-                  guest ok = No
-                  create mask = 0700
-                  force create mode = 0700
-                  force directory mode = 0700
-                  unix extensions = No
-              mode: '000755'
-            /etc/cfn/cfn-hup.conf:
-              content: !Sub |
-                [main]
-                stack=${AWS::StackId}
-                region=${AWS::Region}
-                interval=1
-              mode: '000400'
-              owner: root
-              group: root
+          /etc/cfn/cfn-hup.conf:
+            content: !Sub |
+              [main]
+              stack=${AWS::StackId}
+              region=${AWS::Region}
+              interval=1
+            mode: '000400'
+            owner: root
+            group: root
             /etc/cfn/hooks.d/cfn-auto-reloader.conf:
               content: !Sub |
                 [cfn-auto-reloader-hook]
                 triggers=post.update
-                path=Resources.RepositoryInstance.Metadata.AWS::CloudFormation::Init
-                action=/opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource RepositoryInstance --configsets dcc_install --region ${AWS::Region}
+                path=Resources.WorkstationInstance.Metadata.AWS::CloudFormation::Init
+                action=/opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource WorkstationInstance --configsets dcc_install --region ${AWS::Region}
                 runas=root
               mode: '000400'
               owner: root
@@ -113,15 +87,8 @@ Resources:
               command: sh /opt/scripts/ec2-mount-ebs-volume.sh > /opt/scripts/ec2-mount-ebs-volume.log 2>&1
               test: test -x /opt/scripts/ec2-mount-ebs-volume.sh  # check if filename exists and is executable
               ignoreErrors: false
-            02-samba_user:
-              command: !Sub echo ${SambaPassword} | tee - | smbpasswd -s -a deadlineuser
           services:
             sysvinit:
-              smb:
-                enabled: true
-                ensureRunning: true
-                files:
-                  - /etc/samba/smb.conf
               cfn-hup:
                 enabled: true
                 ensureRunning: true
@@ -133,7 +100,7 @@ Resources:
                 ensureRunning: true
         artefacts_download:
           sources:
-            /data/thinkbox: !Sub https://${ArtefactBucketName}.s3.amazonaws.com/Deadline-${AppVersion}-linux-installers.tar
+            /data/thinkbox: !Sub https://aws-digital-content-creation-render-environment.s3.amazonaws.com/Deadline-${AppVersion}-linux-installers.tar
         app_install:
           commands:
             01-install_repository:
@@ -155,7 +122,7 @@ Resources:
       BlockDeviceMappings:
         - DeviceName: /dev/xvdh
           Ebs:
-            VolumeSize: 35
+            VolumeSize: 30
             VolumeType: gp2
             Encrypted: true
             DeleteOnTermination: true
@@ -163,7 +130,7 @@ Resources:
       ImageId: !Ref InstanceAMI
       InstanceType: !Ref InstanceType
       SecurityGroupIds:
-        - !Ref RepositorySecurityGroup
+        - !Ref WorkstationSecurityGroup
       SubnetId: !Ref PrivateSubnet1
       Tags:
         - Key: Name
@@ -190,10 +157,10 @@ Resources:
 
 Outputs:
   RepositorySecurityGroup:
-    Value: !Ref RepositorySecurityGroup
+    Value: !Ref WorkstationSecurityGroup
 
   RepositoryInstancePrivateIp:
-    Value: !GetAtt RepositoryInstance.PrivateIp
+    Value: !GetAtt WorkstationInstance.PrivateIp
 
   DeadlineVersion:
     Value: !Ref AppVersion
