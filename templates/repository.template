@@ -138,7 +138,7 @@ Resources:
           commands:
             01-install_repository:
               command: ls /data/thinkbox | grep DeadlineRepository |
-                (read repo; /data/thinkbox/$repo
+                (read data; /data/thinkbox/$data
                 --mode unattended
                 --prefix "/data/thinkbox/DeadlineRepository10"
                 --installmongodb true

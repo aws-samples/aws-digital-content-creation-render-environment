@@ -153,7 +153,7 @@ Outputs:
   LicenseServerSecurityGroup:
     Value: !Ref LicenseServerSecurityGroup
 
-  RepositoryInstancePrivateIp:
+  LicenseServerInstancePrivateIp:
     Value: !GetAtt LicenseServerInstance.PrivateIp
 
   DeadlineLicense:

@@ -5,7 +5,7 @@ Parameters:
   VpcID:
     Type: AWS::EC2::VPC::Id
 
-  PrivateSubnet1:
+  PublicSubnet1:
     Type: AWS::EC2::Subnet::Id
 
   InstanceType:
@@ -23,17 +23,64 @@ Parameters:
   AppVersion:
     Type: String
 
+  OnPremIp:
+    Type: String
+
+  LicenseServerInstancePrivateIp:
+    Type: String
+
+  RepositoryInstancePrivateIp:
+    Type: String
+
+  SambaPassword:
+    Type: String
+    NoEcho: true
+
+  NiceDCVPassword:
+    Type: String
+    NoEcho: true
+
+  RepositorySecurityGroup:
+    Type: String
+
+  LicenseServerSecurityGroup:
+    Type: String
+
+  ArtefactBucketName:
+    Type: String
+
 Resources:
   WorkstationSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Security group for workstation instance
       VpcId: !Ref VpcID
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 8443
+          ToPort: 8443
+          CidrIp: !Ref OnPremIp
       Tags:
         - Key: Name
           Value: deadline-workstation-sg
         - Key: Environment
           Value: !Ref Environment
+
+  WorkstationToRepositoryIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref RepositorySecurityGroup
+      Description: deadline-workstation-sg
+      IpProtocol: '-1'
+      SourceSecurityGroupId: !Ref WorkstationSecurityGroup
+
+  WorkstationToLicenseServerIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref LicenseServerSecurityGroup
+      Description: deadline-workstation-sg
+      IpProtocol: '-1'
+      SourceSecurityGroupId: !Ref WorkstationSecurityGroup
 
   WorkstationInstance:
     Type: AWS::EC2::Instance
@@ -47,7 +94,7 @@ Resources:
         instance_prep:
           packages:
             yum:
-              jq: []
+              system-lsb: []
           users:
             deadlineuser: {}
           files:
@@ -63,15 +110,25 @@ Resources:
               mode: '000755'
               owner: root
               group: root
-          /etc/cfn/cfn-hup.conf:
-            content: !Sub |
-              [main]
-              stack=${AWS::StackId}
-              region=${AWS::Region}
-              interval=1
-            mode: '000400'
-            owner: root
-            group: root
+            /etc/dcv/dcv.conf:
+              content: |
+                [session-management]
+                create-session = true
+                [session-management/automatic-console-session]
+                owner="ec2-user"
+                [display]
+                cuda-devices=['0']
+                [display/linux]
+                gl-displays=[':0.0']
+            /etc/cfn/cfn-hup.conf:
+              content: !Sub |
+                [main]
+                stack=${AWS::StackId}
+                region=${AWS::Region}
+                interval=1
+              mode: '000400'
+              owner: root
+              group: root
             /etc/cfn/hooks.d/cfn-auto-reloader.conf:
               content: !Sub |
                 [cfn-auto-reloader-hook]
@@ -87,8 +144,24 @@ Resources:
               command: sh /opt/scripts/ec2-mount-ebs-volume.sh > /opt/scripts/ec2-mount-ebs-volume.log 2>&1
               test: test -x /opt/scripts/ec2-mount-ebs-volume.sh  # check if filename exists and is executable
               ignoreErrors: false
+            02-mkdir_DeadlineRepository:
+              command: mkdir -p /data/DeadlineRepository
+            03-mount_DeadlineRepository:
+              command: !Sub |
+                # create fstab entry for Deadline repository
+                echo "//${RepositoryInstancePrivateIp}/DeadlineRepository /data/DeadlineRepository cifs username=deadlineuser,password=${SambaPassword} 0 0" >> /etc/fstab
+                # mount the Deadline repository
+                mount -a
+              ignoreErrors: true
+            04-set_ec2_user_password:
+              command: !Sub echo ${NiceDCVPassword} | tee - | passwd ec2-user
           services:
             sysvinit:
+              dcvserver:
+                enabled: true
+                ensureRunning: true
+                files:
+                  - /etc/dcv/dcv.conf
               cfn-hup:
                 enabled: true
                 ensureRunning: true
@@ -100,24 +173,22 @@ Resources:
                 ensureRunning: true
         artefacts_download:
           sources:
-            /data/thinkbox: !Sub https://aws-digital-content-creation-render-environment.s3.amazonaws.com/Deadline-${AppVersion}-linux-installers.tar
+            /data/thinkbox: !Sub https://${ArtefactBucketName}.s3.amazonaws.com/Deadline-${AppVersion}-linux-installers.tar
         app_install:
           commands:
             01-install_repository:
-              command: ls /data/thinkbox | grep DeadlineRepository |
-                (read repo; /data/thinkbox/$repo
-                --mode unattended
-                --prefix "/data/thinkbox/DeadlineRepository10"
-                --installmongodb true
-                --mongodir "/data/thinkbox/DeadlineDatabase10"
-                --requireSSL false)
+              command: !Sub |
+                ls /data/thinkbox | grep DeadlineClient | \
+                  (read data; /data/thinkbox/$data \
+                  --mode unattended \
+                  --prefix "/data/thinkbox/DeadlineRepository10" \
+                  --connectiontype Repository \
+                  --repositorydir "/data/DeadlineRepository" \
+                  --licensemode Standard \
+                  --licenseserver @${LicenseServerInstancePrivateIp} \
+                  --launcherstartup true \
+                  --slavestartup false)
               ignoreErrors: true
-            02-set_repo_permissions:
-              command: |
-                chown -R deadlineuser:nobody /data/thinkbox/DeadlineRepository10
-                chmod -R 500 /data/thinkbox/DeadlineRepository10
-                cd /data/thinkbox/DeadlineRepository10 && chmod -R 700 jobs/ jobsArchived/ reports/
-              ignoreErrors: false
     Properties:
       BlockDeviceMappings:
         - DeviceName: /dev/xvdh
@@ -131,10 +202,10 @@ Resources:
       InstanceType: !Ref InstanceType
       SecurityGroupIds:
         - !Ref WorkstationSecurityGroup
-      SubnetId: !Ref PrivateSubnet1
+      SubnetId: !Ref PublicSubnet1
       Tags:
         - Key: Name
-          Value: deadline-repository
+          Value: deadline-workstation
         - Key: Environment
           Value: !Ref Environment
       UserData:
@@ -143,24 +214,24 @@ Resources:
           #!/bin/bash -xe
           # Update aws-cfn-bootstrap to the latest
           yum install -y aws-cfn-bootstrap
-          # !!!Warning: issue with en/disabling SELinux in enforcing mode on the latest Amazon Linux 2 AMIs with version numbers 20191014 and 20191024
-          # sed -i 's/enforcing/disabled/g' /etc/selinux/config /etc/selinux/config
-          # sudo setenforce 0
           # Call cfn-init script to install files and packages
-          /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource RepositoryInstance --configsets dcc_install --region ${AWS::Region}
+          /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource WorkstationInstance --configsets dcc_install --region ${AWS::Region}
           # Call cfn-signal script to send a signal with exit code
-          /opt/aws/bin/cfn-signal --exit-code $? --stack ${AWS::StackName} --resource RepositoryInstance --region ${AWS::Region}
+          /opt/aws/bin/cfn-signal --exit-code $? --stack ${AWS::StackName} --resource WorkstationInstance --region ${AWS::Region}
     CreationPolicy:
       ResourceSignal:
         Count: 1
         Timeout: "PT15M"
 
 Outputs:
-  RepositorySecurityGroup:
+  WorkstationSecurityGroup:
     Value: !Ref WorkstationSecurityGroup
 
-  RepositoryInstancePrivateIp:
+  WorkstationInstancePrivateIp:
     Value: !GetAtt WorkstationInstance.PrivateIp
 
   DeadlineVersion:
     Value: !Ref AppVersion
+
+  WorkstationPublicIP:
+    Value: !Join ['', [ 'https://', !GetAtt WorkstationInstance.PublicIp, ':8443'] ]

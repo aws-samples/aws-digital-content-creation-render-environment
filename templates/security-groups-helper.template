@@ -1,0 +1,47 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Provides cross-reference for Security Groups in the ingress and egress rules.
+Parameters:
+  LicenseServerSecurityGroup:
+    Description: License server Security Group ID
+    Type: AWS::EC2::SecurityGroup::Id
+
+  RepositorySecurityGroup:
+    Description: Render Scheduler Security Group ID
+    Type: AWS::EC2::SecurityGroup::Id
+
+#  RenderFarmSecurityGroup:
+#    Description: Render Farm Security Group ID
+#    Type: AWS::EC2::SecurityGroup::Id
+
+Resources:
+  RepositoryToLicenseServerIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref LicenseServerSecurityGroup
+      Description: render-scheduler-sg
+      IpProtocol: '-1'
+      SourceSecurityGroupId: !Ref RepositorySecurityGroup
+
+#  rRenderFarmToLicenseServerIngress:
+#    Type: AWS::EC2::SecurityGroupIngress
+#    Properties:
+#      GroupId: !Ref pLicenseServerSecurityGroup
+#      Description: render-farm-sg
+#      IpProtocol: '-1'
+#      SourceSecurityGroupId: !Ref pRenderFarmSecurityGroup
+
+#  rRenderSchedulerToRenderFarmIngress:
+#    Type: AWS::EC2::SecurityGroupIngress
+#    Properties:
+#      GroupId: !Ref pRenderFarmSecurityGroup
+#      Description: render-scheduler-sg
+#      IpProtocol: '-1'
+#      SourceSecurityGroupId: !Ref pRenderSchedulerSecurityGroup
+
+#  rRenderFarmToRenderSchedulerIngress:
+#    Type: AWS::EC2::SecurityGroupIngress
+#    Properties:
+#      GroupId: !Ref pRenderSchedulerSecurityGroup
+#      Description: render-farm-sg
+#      IpProtocol: '-1'
+#      SourceSecurityGroupId: !Ref pRenderFarmSecurityGroup

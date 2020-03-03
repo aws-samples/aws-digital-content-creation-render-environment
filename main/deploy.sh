@@ -20,4 +20,5 @@ aws cloudformation deploy \
   --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
   --parameter-overrides \
     AvailabilityZones=${AWS_REGION}a,${AWS_REGION}b \
-    SambaPassword=$SAMBA_PASSWORD
+    SambaPassword=$SAMBA_PASSWORD \
+    NiceDCVPassword=$NICEDCV_PASSWORD
