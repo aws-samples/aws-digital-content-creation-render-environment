@@ -26,6 +26,44 @@ Resources:
       Roles:
         - !Ref EC2SessionManagerRole
 
+  #-- The managed policy for Amazon EC2 Role to enable AWS Systems Manager service core functionality. --#
+  WorkstationSessionManagerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+
+  #-- Amazon EC2 instance periodically connects to an Amazon S3 bucket to determine whether a valid license is available. --#
+  NiceDCVLicensePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: DcvInstallAccess
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:GetObject
+            Resource: !Sub arn:aws:s3:::dcv-license.${AWS::Region}/*
+      Roles:
+        - !Ref WorkstationSessionManagerRole
+
+  WorkstationInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles:
+        - !Ref WorkstationSessionManagerRole
+
   #-- Allows EC2 Spot Fleet to request, terminate and tag Spot Instances on your behalf. --#
   SpotFleetRole:
     Type: AWS::IAM::Role
@@ -41,16 +79,12 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AmazonEC2SpotFleetTaggingRole
 
-  SpotFleetInstanceProfile:
-    Type: AWS::IAM::InstanceProfile
-    Properties:
-      Path: /
-      Roles:
-        - !Ref SpotFleetRole
-
 Outputs:
   EC2InstanceProfile:
     Value: !Ref EC2InstanceProfile
+
+  WorkstationInstanceProfile:
+    Value: !Ref WorkstationInstanceProfile
 
   SpotFleetARN:
     Value: !GetAtt SpotFleetRole.Arn

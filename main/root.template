@@ -6,7 +6,7 @@ Globals:
   Function:
     Environment:
       Variables:
-        VERSION: '0.11'
+        VERSION: '0.12'
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -179,6 +179,11 @@ Parameters:
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
     Default: 0.0.0.0/0
 
+  RenderNodeTargetCapacity:
+    Type: String
+    Description: The number of instances in the spot fleet
+    Default: 2
+
   Environment:
     Type: String
     Description: Environment (Dev, Test or Prod)
@@ -200,50 +205,62 @@ Mappings:
     us-east-1:
       NICEDCV: ami-07518881491131823
       AMZL2: ami-0a887e401f7654935
+      InstanceType: [c5.large, c4.large]
 
     us-east-2:
       NICEDCV: ami-0879dc7a6c4d1e6db
       AMZL2: ami-0e38b48473ea57778
+      InstanceType: [c5.large, c4.large]
 
     us-west-1:
       NICEDCV: ami-07b60144ca51e5cfe
       AMZL2: ami-01c94064639c71719
+      InstanceType: [c5.large, c4.large]
 
     us-west-2:
       NICEDCV: ami-002a233b37206a269
       AMZL2: ami-0e8c04af2729ff1bb
+      InstanceType: [c5.large, c4.large]
 
     ap-northeast-1:
       NICEDCV: ami-0dec805ab1bd36aba
       AMZL2: ami-0af1df87db7b650f4
+      InstanceType: [c5.large, c4.large]
 
     ap-northeast-2:
       NICEDCV: ami-0bbedf77cc9675e17
       AMZL2: ami-0a93a08544874b3b7
+      InstanceType: [c5.large, c4.large]
 
     ap-south-1:
       NICEDCV: ami-0ec5a5a7fb3e1385d
       AMZL2: ami-0d9462a653c34dab7
+      InstanceType: [c5.large, c4.large]
 
     ap-southeast-1:
       NICEDCV: ami-0ab0206f56fc9996c
       AMZL2: ami-0f02b24005e4aec36
+      InstanceType: [c5.large, c4.large]
 
     ap-southeast-2:
       NICEDCV: ami-01010fe90ef401d4f
       AMZL2: ami-0f767afb799f45102
+      InstanceType: [c5.large, c4.large]
 
     eu-central-1:
       NICEDCV: ami-03d479014c2c2f8d8
       AMZL2: ami-0df0e7600ad0913a9
+      InstanceType: [c5.large, c4.large]
 
     eu-west-1:
       NICEDCV: ami-02060b15ad43c10eb
       AMZL2: ami-099a8245f5daa82bf
+      InstanceType: [c5.large, c4.large]
 
     eu-west-2:
       NICEDCV: ami-04410ec306a9ed0c2
       AMZL2: ami-0389b2a3c4948b1a0
+      InstanceType: [c5.large, c4.large]
 
 Resources:
   IAMStack:
@@ -277,7 +294,6 @@ Resources:
       Parameters:
         LicenseServerSecurityGroup: !GetAtt LicenseServerStack.Outputs.LicenseServerSecurityGroup
         RepositorySecurityGroup: !GetAtt RepositoryStack.Outputs.RepositorySecurityGroup
-#        pRenderFarmSecurityGroup: !GetAtt RenderFarmTemplate.Outputs.rRenderFarmSecurityGroup
 
   RepositoryStack:
     Type: AWS::CloudFormation::Stack
@@ -321,7 +337,7 @@ Resources:
         PublicSubnet1: !GetAtt VPCStack.Outputs.PublicSubnet1
         InstanceType: !Ref WorkstationInstanceType
         InstanceAMI: !FindInMap [AMIRegionMap, !Ref 'AWS::Region', NICEDCV]
-        EC2InstanceProfile: !GetAtt IAMStack.Outputs.EC2InstanceProfile
+        WorkstationInstanceProfile: !GetAtt IAMStack.Outputs.WorkstationInstanceProfile
         AppVersion: !Ref AppVersion
         Environment: !Ref Environment
         ArtefactBucketName: !Ref ArtefactBucketName
@@ -333,6 +349,37 @@ Resources:
         LicenseServerSecurityGroup: !GetAtt LicenseServerStack.Outputs.LicenseServerSecurityGroup
         OnPremIp: !Ref OnPremIp
 
+  RenderNodeStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ../templates/render-node.template
+      TimeoutInMinutes: 30
+      Parameters:
+        AvailabilityZones:
+          Fn::Join:
+            - ','
+            - !Ref AvailabilityZones
+        VpcID: !GetAtt VPCStack.Outputs.VpcID
+        PrivateSubnet1: !GetAtt VPCStack.Outputs.PrivateSubnet1
+        PrivateSubnet2: !GetAtt VPCStack.Outputs.PrivateSubnet2
+        InstanceTypes:
+          Fn::Join:
+            - ','
+            - !FindInMap [AMIRegionMap, !Ref 'AWS::Region', InstanceType]
+        InstanceAMI: !FindInMap [AMIRegionMap, !Ref 'AWS::Region', AMZL2]
+        Environment: !Ref Environment
+        EC2InstanceProfile: !GetAtt IAMStack.Outputs.EC2InstanceProfile
+        SpotFleetARN: !GetAtt IAMStack.Outputs.SpotFleetARN
+        AppVersion: !Ref AppVersion
+        LicenseServerInstancePrivateIp: !GetAtt LicenseServerStack.Outputs.LicenseServerInstancePrivateIp
+        RepositoryInstancePrivateIp: !GetAtt RepositoryStack.Outputs.RepositoryInstancePrivateIp
+        SambaPassword: !Ref SambaPassword #pragma: allowlist secret
+        NiceDCVPassword: !Ref NiceDCVPassword #pragma: allowlist secret
+        RepositorySecurityGroup: !GetAtt RepositoryStack.Outputs.RepositorySecurityGroup
+        LicenseServerSecurityGroup: !GetAtt LicenseServerStack.Outputs.LicenseServerSecurityGroup
+        ArtefactBucketName: !Ref ArtefactBucketName
+        RenderNodeTargetCapacity: !Ref RenderNodeTargetCapacity
+
 Outputs:
   TemplateType:
     Value: AWS Digital Content Creation Architecture - AWS ThinkBox Deadline.
@@ -340,5 +387,5 @@ Outputs:
   TemplateVersion:
     Value: 1.0
 
-#  WorkstationPublicIP:
-#    Value: !GetAtt WorkstationStack.Outputs.WorkstationPublicIP
+  WorkstationPublicIP:
+    Value: !GetAtt WorkstationStack.Outputs.WorkstationPublicIP

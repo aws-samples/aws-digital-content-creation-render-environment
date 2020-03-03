@@ -17,7 +17,7 @@ Parameters:
   Environment:
     Type: String
 
-  EC2InstanceProfile:
+  WorkstationInstanceProfile:
     Type: String
 
   AppVersion:
@@ -198,7 +198,7 @@ Resources:
             VolumeType: gp2
             Encrypted: true
             DeleteOnTermination: true
-      IamInstanceProfile: !Ref EC2InstanceProfile
+      IamInstanceProfile: !Ref WorkstationInstanceProfile
       ImageId: !Ref InstanceAMI
       InstanceType: !Ref InstanceType
       SecurityGroupIds:
