@@ -6,7 +6,7 @@ Globals:
   Function:
     Environment:
       Variables:
-        VERSION: '0.12'
+        VERSION: '0.13'
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -257,10 +257,10 @@ Mappings:
       AMZL2: ami-099a8245f5daa82bf
       InstanceType: [c5.large, c4.large]
 
-    eu-west-2:
-      NICEDCV: ami-04410ec306a9ed0c2
-      AMZL2: ami-0389b2a3c4948b1a0
-      InstanceType: [c5.large, c4.large]
+#    eu-west-2:
+#      NICEDCV: ami-04410ec306a9ed0c2
+#      AMZL2: ami-0389b2a3c4948b1a0
+#      InstanceType: [c5.large, c4.large]
 
 Resources:
   IAMStack:
