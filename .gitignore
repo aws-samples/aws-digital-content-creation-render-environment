@@ -1,4 +1,6 @@
 /main/root-packaged.template
 /main/.env
 /artefacts/
-/.idea/
+/.idea*
+/.taskcat/
+/taskcat_outputs/

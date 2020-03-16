@@ -6,7 +6,7 @@ Globals:
   Function:
     Environment:
       Variables:
-        VERSION: '0.13'
+        VERSION: '0.14'
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -169,7 +169,7 @@ Parameters:
 
   DeadlineLicense:
     Type: String
-    Description: Dedline license
+    Description: Deadline license
     NoEcho: true
     Default: 123456789012
 
