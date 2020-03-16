@@ -74,7 +74,7 @@ You are responsible for the cost of the AWS services used while running this sam
     |---------------|-------|-----------|
     |Availability Zones | `Requires input` | The list of Availability Zones to use for the subnets in the VPC. Select **two** Availability Zones from your list. |
     |VPC name | dcc-vpc | The name of the VPC. |
-    |VPC CIDR | 10.100.0.0/16 | The CIDR block for the production VPC. |
+    |VPC CIDR | 10.0.0.0/16 | The CIDR block for the production VPC. |
     |Public Subnet 1 CIDR | 10.0.0.0/24 | The CIDR block for the public subnet located in Availability Zone 1 of the VPC. |
     |Public Subnet 2 CIDR | 10.0.1.0/24 | The CIDR block for the public subnet located in Availability Zone 2 of the VPC. |
     |Private Subnet 1 CIDR | 10.0.2.0/24 | The CIDR block for the private subnet located in Availability Zone 1 of the VPC. |
@@ -108,7 +108,7 @@ You are responsible for the cost of the AWS services used while running this sam
 
 ### Login to Workstation and Start Deadline application
 
-1. Note the **WorkstationPublicIP** displayed in the **Outputs** tab of the **root** stack (it is the one without words *NESTED*).
+1. Note the **WorkstationPublicIP** displayed in the **Outputs** tab of the **root** stack (it is the one without word *NESTED*).
 1. In the web browser, paste the **WorkstationPublicIP** and log in to the workstation with **ec2-user** credentials.
 1. Start the Deadline application from `Other -> Deadline monitor`
 
