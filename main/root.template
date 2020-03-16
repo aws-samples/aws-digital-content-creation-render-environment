@@ -6,7 +6,7 @@ Globals:
   Function:
     Environment:
       Variables:
-        VERSION: '0.14'
+        VERSION: '0.15'
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -40,7 +40,6 @@ Metadata:
           default: Workstation configuration
         Parameters:
           - WorkstationInstanceType
-          - AppVersion
           - NiceDCVPassword
     ParameterLabels:
       AvailabilityZones:
@@ -66,7 +65,7 @@ Metadata:
       LicenseServerInstanceType:
         default: License server instance type
       LicenseServerVersion:
-        default: License server verison
+        default: License server version
       DeadlineLicense:
         default: Deadline license key
       WorkstationInstanceType:
@@ -387,5 +386,5 @@ Outputs:
   TemplateVersion:
     Value: 1.0
 
-  WorkstationPublicIP:
-    Value: !GetAtt WorkstationStack.Outputs.WorkstationPublicIP
+#  WorkstationPublicIP:
+#    Value: !GetAtt WorkstationStack.Outputs.WorkstationPublicIP

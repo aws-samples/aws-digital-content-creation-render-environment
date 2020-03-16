@@ -91,6 +91,7 @@ Resources:
           dcc_install:
             - instance_prep
             - artefacts_download
+            - blender_download
             - app_install
         instance_prep:
           packages:
@@ -175,6 +176,9 @@ Resources:
         artefacts_download:
           sources:
             /data/thinkbox: !Sub https://${ArtefactBucketName}.s3.amazonaws.com/Deadline-${AppVersion}-linux-installers.tar
+        blender_download:
+          sources:
+            /data/blender: !Sub https://${ArtefactBucketName}.s3.amazonaws.com/blender-2.82-linux64.zip
         app_install:
           commands:
             01-install_repository:
