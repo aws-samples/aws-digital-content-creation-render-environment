@@ -19,5 +19,4 @@ tests:
     parameters:
       AvailabilityZones: $[taskcat_genaz_2]
       StackName: TaskcatStack
-      SambaPassword: $[taskcat_genpass_8A]
-      NiceDCVPassword: $[taskcat_genpass_8A]
+      EC2UserPassword: $[taskcat_genpass_8A]
