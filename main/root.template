@@ -6,7 +6,7 @@ Globals:
   Function:
     Environment:
       Variables:
-        VERSION: '0.15'
+        VERSION: '0.16'
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -28,7 +28,6 @@ Metadata:
           default: Repository and database configuration
         Parameters:
           - RepositoryInstanceType
-          - SambaPassword
           - AppVersion
       - Label:
           default: License server configuration
@@ -40,7 +39,6 @@ Metadata:
           default: Workstation configuration
         Parameters:
           - WorkstationInstanceType
-          - NiceDCVPassword
     ParameterLabels:
       AvailabilityZones:
         default: Availability Zones
@@ -58,8 +56,6 @@ Metadata:
         default: Private Subnet 2 CIDR
       RepositoryInstanceType:
         default: Render scheduler instance type
-      SambaPassword:
-        default: Samba password
       AppVersion:
         default: Deadline application version
       LicenseServerInstanceType:
@@ -70,8 +66,6 @@ Metadata:
         default: Deadline license key
       WorkstationInstanceType:
         default: Workstation instance type
-      NiceDCVPassword:
-        default: Set ec2-user password
 
 Parameters:
   AvailabilityZones:
@@ -123,14 +117,9 @@ Parameters:
     Description: Render scheduler instance type
     Default: m5.xlarge
 
-  SambaPassword:
+  EC2UserPassword:
     Type: String
-    Description: Samba password for deadlineuser account used to connect to repository.
-    NoEcho: true
-
-  NiceDCVPassword:
-    Type: String
-    Description: Set password for ec2-user to access workstation
+    Description: Set password for ec2-user
     NoEcho: true
 
   WorkstationInstanceType:
@@ -181,7 +170,7 @@ Parameters:
   RenderNodeTargetCapacity:
     Type: String
     Description: The number of instances in the spot fleet
-    Default: 2
+    Default: 0
 
   Environment:
     Type: String
@@ -256,11 +245,6 @@ Mappings:
       AMZL2: ami-099a8245f5daa82bf
       InstanceType: [c5.large, c4.large]
 
-#    eu-west-2:
-#      NICEDCV: ami-04410ec306a9ed0c2
-#      AMZL2: ami-0389b2a3c4948b1a0
-#      InstanceType: [c5.large, c4.large]
-
 Resources:
   IAMStack:
     Type: AWS::CloudFormation::Stack
@@ -305,7 +289,7 @@ Resources:
         InstanceType: !Ref RepositoryInstanceType
         InstanceAMI: !FindInMap [AMIRegionMap, !Ref 'AWS::Region', AMZL2]
         EC2InstanceProfile: !GetAtt IAMStack.Outputs.EC2InstanceProfile
-        SambaPassword: !Ref SambaPassword #pragma: allowlist secret
+        EC2UserPassword: !Ref EC2UserPassword #pragma: allowlist secret
         AppVersion: !Ref AppVersion
         Environment: !Ref Environment
         ArtefactBucketName: !Ref ArtefactBucketName
@@ -342,8 +326,7 @@ Resources:
         ArtefactBucketName: !Ref ArtefactBucketName
         RepositoryInstancePrivateIp: !GetAtt RepositoryStack.Outputs.RepositoryInstancePrivateIp
         LicenseServerInstancePrivateIp: !GetAtt LicenseServerStack.Outputs.LicenseServerInstancePrivateIp
-        SambaPassword: !Ref SambaPassword #pragma: allowlist secret
-        NiceDCVPassword: !Ref NiceDCVPassword #pragma: allowlist secret
+        EC2UserPassword: !Ref EC2UserPassword #pragma: allowlist secret
         RepositorySecurityGroup: !GetAtt RepositoryStack.Outputs.RepositorySecurityGroup
         LicenseServerSecurityGroup: !GetAtt LicenseServerStack.Outputs.LicenseServerSecurityGroup
         OnPremIp: !Ref OnPremIp
@@ -372,8 +355,7 @@ Resources:
         AppVersion: !Ref AppVersion
         LicenseServerInstancePrivateIp: !GetAtt LicenseServerStack.Outputs.LicenseServerInstancePrivateIp
         RepositoryInstancePrivateIp: !GetAtt RepositoryStack.Outputs.RepositoryInstancePrivateIp
-        SambaPassword: !Ref SambaPassword #pragma: allowlist secret
-        NiceDCVPassword: !Ref NiceDCVPassword #pragma: allowlist secret
+        EC2UserPassword: !Ref EC2UserPassword #pragma: allowlist secret
         RepositorySecurityGroup: !GetAtt RepositoryStack.Outputs.RepositorySecurityGroup
         LicenseServerSecurityGroup: !GetAtt LicenseServerStack.Outputs.LicenseServerSecurityGroup
         ArtefactBucketName: !Ref ArtefactBucketName
@@ -386,5 +368,5 @@ Outputs:
   TemplateVersion:
     Value: 1.0
 
-#  WorkstationPublicIP:
-#    Value: !GetAtt WorkstationStack.Outputs.WorkstationPublicIP
+  WorkstationPublicIP:
+    Value: !GetAtt WorkstationStack.Outputs.WorkstationPublicIP

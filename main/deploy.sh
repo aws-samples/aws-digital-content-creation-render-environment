@@ -20,5 +20,5 @@ aws cloudformation deploy \
   --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
   --parameter-overrides \
     AvailabilityZones=${AWS_REGION}a,${AWS_REGION}b \
-    SambaPassword=$SAMBA_PASSWORD \
-    NiceDCVPassword=$NICEDCV_PASSWORD
+    EC2UserPassword=${EC2_USER_PASSWORD} \
+    RenderNodeTargetCapacity=${RENDER_NODE_TARGET_CAPACITY}

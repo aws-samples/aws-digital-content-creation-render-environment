@@ -20,7 +20,7 @@ Parameters:
   AppVersion:
     Type: String
 
-  SambaPassword:
+  EC2UserPassword:
     Type: String
     NoEcho: true
 
@@ -55,8 +55,6 @@ Resources:
           packages:
             yum:
               samba: []
-          users:
-            deadlineuser: {}
           files:
             /opt/scripts/ec2-mount-ebs-volume.sh:
               content: |
@@ -80,6 +78,10 @@ Resources:
                   printcap name = cups
                   load printers = yes
                   cups options = raw
+                  # log files split per-machine:
+                  log file = /var/log/samba/log.%m
+                  # maximum size of 50KB per log file, then rotate:
+                  max log size = 50
                 [DeadlineRepository]
                   path = /data/thinkbox/DeadlineRepository10
                   writeable = Yes
@@ -114,7 +116,7 @@ Resources:
               test: test -x /opt/scripts/ec2-mount-ebs-volume.sh  # check if filename exists and is executable
               ignoreErrors: false
             02-samba_user:
-              command: !Sub echo ${SambaPassword} | tee - | smbpasswd -s -a deadlineuser
+              command: !Sub echo ${EC2UserPassword} | tee - | smbpasswd -s -a ec2-user
           services:
             sysvinit:
               smb:
@@ -147,7 +149,7 @@ Resources:
               ignoreErrors: true
             02-set_repo_permissions:
               command: |
-                chown -R deadlineuser:nobody /data/thinkbox/DeadlineRepository10
+                chown -R ec2-user:nobody /data/thinkbox/DeadlineRepository10
                 chmod -R 500 /data/thinkbox/DeadlineRepository10
                 cd /data/thinkbox/DeadlineRepository10 && chmod -R 700 jobs/ jobsArchived/ reports/
               ignoreErrors: false

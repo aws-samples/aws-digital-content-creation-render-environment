@@ -33,11 +33,7 @@ Parameters:
   RepositoryInstancePrivateIp:
     Type: String
 
-  SambaPassword:
-    Type: String
-    NoEcho: true
-
-  NiceDCVPassword:
+  EC2UserPassword:
     Type: String
     NoEcho: true
 
@@ -97,8 +93,7 @@ Resources:
           packages:
             yum:
               system-lsb: []
-          users:
-            deadlineuser: {}
+              cifs-utils: []
           files:
             /opt/scripts/ec2-mount-ebs-volume.sh:
               content: |
@@ -122,6 +117,13 @@ Resources:
                 cuda-devices=['0']
                 [display/linux]
                 gl-displays=[':0.0']
+            /home/ec2-user/.smbcredentials:
+              content: !Sub |
+                username=ec2-user
+                password=${EC2UserPassword}
+              mode: '000400'
+              owner: ec2-user
+              group: ec2-user
             /etc/cfn/cfn-hup.conf:
               content: !Sub |
                 [main]
@@ -151,12 +153,12 @@ Resources:
             03-mount_DeadlineRepository:
               command: !Sub |
                 # create fstab entry for Deadline repository
-                echo "//${RepositoryInstancePrivateIp}/DeadlineRepository /data/DeadlineRepository cifs username=deadlineuser,password=${SambaPassword} 0 0" >> /etc/fstab
+                echo "//${RepositoryInstancePrivateIp}/DeadlineRepository /data/DeadlineRepository cifs credentials=/home/ec2-user/.smbcredentials,uid=ec2-user 0 0" >> /etc/fstab
                 # mount the Deadline repository
                 mount -a
               ignoreErrors: true
             04-set_ec2_user_password:
-              command: !Sub echo ${NiceDCVPassword} | tee - | passwd ec2-user
+              command: !Sub echo ${EC2UserPassword} | tee - | passwd ec2-user
           services:
             sysvinit:
               dcvserver:
@@ -178,7 +180,7 @@ Resources:
             /data/thinkbox: !Sub https://${ArtefactBucketName}.s3.amazonaws.com/Deadline-${AppVersion}-linux-installers.tar
         blender_download:
           sources:
-            /data/blender: !Sub https://${ArtefactBucketName}.s3.amazonaws.com/blender-2.82-linux64.zip
+            /usr/local: !Sub https://${ArtefactBucketName}.s3.amazonaws.com/Blender.zip
         app_install:
           commands:
             01-install_repository:
@@ -186,7 +188,7 @@ Resources:
                 ls /data/thinkbox | grep DeadlineClient | \
                   (read data; /data/thinkbox/$data \
                   --mode unattended \
-                  --prefix "/data/thinkbox/DeadlineRepository10" \
+                  --prefix "/data/thinkbox/Deadline10" \
                   --connectiontype Repository \
                   --repositorydir "/data/DeadlineRepository" \
                   --licensemode Standard \
