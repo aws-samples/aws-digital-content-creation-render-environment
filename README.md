@@ -12,11 +12,10 @@ Furthermore, the solution comes with [Blender](https://www.blender.org/) install
 - [Getting Started](#getting-started)
     - [Prerequisites](#prerequisites)
     - [Deployment](#deployment)
-    - [Login to Workstation](#login-to-workstation)
-- [Set up Blender](#set-up-blender)
-- [Render example](#render-example)
+    - [Login to Workstation and Start Deadline application](#login-to-workstation-and-start-deadline-application)
+- [Render Something to Test the Setup](#render-something-to-test-the-setup)
 - [Running the tests](#running-the-tests)
-- [Clean up resources](#clean-up-resources)
+- [Clean up](#clean-up)
 - [Contributing](#contributing)
 
 ### Architecture
@@ -80,14 +79,13 @@ You are responsible for the cost of the AWS services used while running this sam
     |Private Subnet 1 CIDR | 10.0.2.0/24 | The CIDR block for the private subnet located in Availability Zone 1 of the VPC. |
     |Private Subnet 2 CIDR | 10.0.3.0/24 | The CIDR block for the private subnet located in Availability Zone 2 of the VPC. |
     |Render scheduler instance type | m5.xlarge | The EC2 instance type for the Deadline repository. |
-    |Samba password | `Requires input` | Samba password for **deadlineuser** account used to mount the repository. |
     |Deadline application version | 10.1.3.6 | The version of Deadline application. |
     |License server instance type| m5.xlarge | The EC2 instance type for the License server. |
     |License server version | 1.1 | The version of License server. |
     |Deadline license key | 123456789012 | The Deadline license key. |
     |Workstation instance type | g4dn.xlarge | The EC2 instance type for the Deadline workstation. |
-    |Set ec2-user password| `Requires input` | The **ec2-user** password for remote access to NICEDCV server. |
     |ArtefactBucketName | aws-digital-content-creation-render-environment | The S3 bucket you created for your copy of Quick Start assets, if you decide to customize or extend the solution for your own use. |
+    |EC2UserPassword| `Requires input` | The **ec2-user** password for remote access to NICEDCV server and to access Deadline Repository samba share. |
     |Environment | DEV | The type of environment to tag your infrastructure with. You can specify DEV (development), TEST (test), or PROD (production). |
     |OnPremIp| 0.0.0.0/0 | On-premises IP to unable access to workstation. |
     |RenderNodeTargetCapacity| 2 | The number of instances in the Spot Fleet. |
@@ -108,15 +106,20 @@ You are responsible for the cost of the AWS services used while running this sam
 
 ### Login to Workstation and Start Deadline application
 
-1. Note the **WorkstationPublicIP** displayed in the **Outputs** tab of the **root** stack (it is the one without word *NESTED*).
+1. Note the **WorkstationPublicIP** displayed in the **Outputs** tab of the **root** stack (it is the one without word **NESTED**).
 1. In the web browser, paste the **WorkstationPublicIP** and log in to the workstation with **ec2-user** credentials.
-1. Start the Deadline application from `Other -> Deadline monitor`
+1. Start the Deadline application from `Application -> Other -> Deadline Monitor 10`
 
-## Set up Blender
-TODO
+## Render Something to Test the Setup
 
-## Render example
-TODO
+Now that you’ve got most of the pieces together, it’s a good idea to test the setup to make sure you can submit a render from your workstation, have the Render Scheduler pick it up, and run the render on your Worker.
+
+For this part, you will use [Blender](https://www.blender.org/) to render something.
+
+Follow the instructions to:
+
+* to set up [worker nodes](docs/workers-setup.md)
+* to set up [Blender and submit a job](docs/blender.md)
 
 ## Running the tests
 
@@ -134,7 +137,7 @@ taskat test run
 
 You can modify the taskcat configuration file with your own tests here [.taskcat.yml](.taskcat.yml)
 
-### Clean up
+## Clean up
 
 Follow these steps to clean up created resources:
 
