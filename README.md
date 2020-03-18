@@ -118,8 +118,8 @@ For this part, you will use [Blender](https://www.blender.org/) to render someth
 
 Follow the instructions to:
 
-* to set up [worker nodes](docs/workers-setup.md)
-* to set up [Blender and submit a job](docs/blender.md)
+* set up [Worker Nodes](docs/workers-setup.md)
+* set up [Blender and submit a job](docs/blender.md)
 
 ## Running the tests
 
@@ -129,6 +129,8 @@ Install taskcat
 ```
 pip install taskcat
 ```
+
+> You need to package the templates to S3 before you can run the test below. See [Getting Started](#getting-started) instructions.
 
 From within project root directory run:
 ```

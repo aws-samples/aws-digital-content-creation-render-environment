@@ -6,7 +6,7 @@ Globals:
   Function:
     Environment:
       Variables:
-        VERSION: '0.17'
+        VERSION: '0.18'
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -170,7 +170,7 @@ Parameters:
   RenderNodeTargetCapacity:
     Type: String
     Description: The number of instances in the spot fleet
-    Default: 0
+    Default: 2
 
   Environment:
     Type: String
