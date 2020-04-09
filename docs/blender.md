@@ -6,7 +6,7 @@ This will involve using the workstation to set up a shot to do a test render.
 1. Create a `test_project` folder in **projects** directory `/data/DeadlineRepository/jobs/`
 
    ```
-   mkdir -p data/DeadlineRepository/jobs/projects/test_project
+   mkdir -p  /mnt/efs/test_project
    ```
 
 1. Launch **Blender** by running the blender shortcut located in */usr/local/Blender*

@@ -2,11 +2,11 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: Provides configuration for a Deadline workstation instance.
 
 Parameters:
-  VpcID:
-    Type: AWS::EC2::VPC::Id
-
   PublicSubnet1:
     Type: AWS::EC2::Subnet::Id
+
+  WorkstationSecurityGroup:
+    Type: AWS::EC2::SecurityGroup::Id
 
   InstanceType:
     Type: String
@@ -23,10 +23,6 @@ Parameters:
   AppVersion:
     Type: String
 
-  OnPremIp:
-    Type: String
-    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
-
   LicenseServerInstancePrivateIp:
     Type: String
 
@@ -37,48 +33,13 @@ Parameters:
     Type: String
     NoEcho: true
 
-  RepositorySecurityGroup:
-    Type: String
-
-  LicenseServerSecurityGroup:
-    Type: String
-
   ArtefactBucketName:
     Type: String
 
+  EfsFileSystem:
+    Type: String
+
 Resources:
-  WorkstationSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: Security group for workstation instance
-      VpcId: !Ref VpcID
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 8443
-          ToPort: 8443
-          CidrIp: !Ref OnPremIp
-      Tags:
-        - Key: Name
-          Value: deadline-workstation-sg
-        - Key: Environment
-          Value: !Ref Environment
-
-  WorkstationToRepositoryIngress:
-    Type: AWS::EC2::SecurityGroupIngress
-    Properties:
-      GroupId: !Ref RepositorySecurityGroup
-      Description: deadline-workstation-sg
-      IpProtocol: '-1'
-      SourceSecurityGroupId: !Ref WorkstationSecurityGroup
-
-  WorkstationToLicenseServerIngress:
-    Type: AWS::EC2::SecurityGroupIngress
-    Properties:
-      GroupId: !Ref LicenseServerSecurityGroup
-      Description: deadline-workstation-sg
-      IpProtocol: '-1'
-      SourceSecurityGroupId: !Ref WorkstationSecurityGroup
-
   WorkstationInstance:
     Type: AWS::EC2::Instance
     Metadata:
@@ -89,6 +50,7 @@ Resources:
             - artefacts_download
             - blender_download
             - app_install
+            - post_install
         instance_prep:
           packages:
             yum:
@@ -104,6 +66,20 @@ Resources:
                   e2label $(readlink -f /dev/xvdh) dcc-data
                   grep -q ^LABEL=dcc-data /etc/fstab || echo 'LABEL=dcc-data /data ext4 defaults' >> /etc/fstab
                   grep -q "^$(readlink -f /dev/xvdh) /data " /proc/mounts || mount /data
+              mode: '000755'
+              owner: root
+              group: root
+            /opt/scripts/dns.sh:
+              content: !Sub |
+                #!/usr/bin/env bash
+                results=1
+                while [[ $results != 0 ]]; do
+                  nslookup ${EfsFileSystem}.efs.${AWS::Region}.amazonaws.com
+                  results=$?
+                  if [[ $results = 1 ]]; then
+                    sleep 30s
+                  fi
+                done
               mode: '000755'
               owner: root
               group: root
@@ -148,16 +124,29 @@ Resources:
               command: sh /opt/scripts/ec2-mount-ebs-volume.sh > /opt/scripts/ec2-mount-ebs-volume.log 2>&1
               test: test -x /opt/scripts/ec2-mount-ebs-volume.sh  # check if filename exists and is executable
               ignoreErrors: false
-            02-mkdir_DeadlineRepository:
+            02-wait_for_dns_propogation:
+              command: sh /opt/scripts/dns.sh
+              test: test -x /opt/scripts/dns.sh
+            03-mount_efs:
+              command: !Sub |
+                #!/bin/bash -xe
+                EFS_DIRECTORY=/mnt/efs
+                mkdir $EFS_DIRECTORY
+                echo "${EfsFileSystem}:/ $EFS_DIRECTORY efs _netdev" >> /etc/fstab
+                mount -a -t efs defaults
+              ignoreErrors: false
+            04-set-permission-on-efs:
+              command: chown -R ec2-user:root /mnt/efs
+            05-mkdir_DeadlineRepository:
               command: mkdir -p /data/DeadlineRepository
-            03-mount_DeadlineRepository:
+            06-mount_DeadlineRepository:
               command: !Sub |
                 # create fstab entry for Deadline repository
                 echo "//${RepositoryInstancePrivateIp}/DeadlineRepository /data/DeadlineRepository cifs credentials=/home/ec2-user/.smbcredentials,uid=ec2-user 0 0" >> /etc/fstab
                 # mount the Deadline repository
                 mount -a
               ignoreErrors: true
-            04-set_ec2_user_password:
+            07-set_ec2_user_password:
               command: !Sub echo ${EC2UserPassword} | tee - | passwd ec2-user
           services:
             sysvinit:
@@ -196,6 +185,21 @@ Resources:
                   --launcherstartup true \
                   --slavestartup false)
               ignoreErrors: true
+        post_install:
+          packages:
+            amazon-linux-extras:
+              gimp: []
+          commands:
+            01-install-google-chrome:
+              command: |
+                cd /home/ec2-user
+                wget https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
+                yum localinstall -y google-chrome-stable_current_x86_64.rpm
+              ignoreErrors: true
+            02-install-gimp:
+              command: amazon-linux-extras install -y gimp
+              ignoreErrors: true
+
     Properties:
       BlockDeviceMappings:
         - DeviceName: /dev/xvdh
@@ -219,8 +223,18 @@ Resources:
         Fn::Base64:
           !Sub |
           #!/bin/bash -xe
+
           # Update aws-cfn-bootstrap to the latest
           yum install -y aws-cfn-bootstrap
+
+          # Install efs-utils
+          yum install -y amazon-efs-utils
+
+          # Install the EPEL release package for EL 7 and enable the EPEL repository
+          #yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+          #yum-config-manager --enable epel
+          #yum update -y --skip-broken
+
           # Call cfn-init script to install files and packages
           /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource WorkstationInstance --configsets dcc_install --region ${AWS::Region}
           # Call cfn-signal script to send a signal with exit code
@@ -231,9 +245,6 @@ Resources:
         Timeout: "PT15M"
 
 Outputs:
-  WorkstationSecurityGroup:
-    Value: !Ref WorkstationSecurityGroup
-
   WorkstationInstancePrivateIp:
     Value: !GetAtt WorkstationInstance.PrivateIp
 

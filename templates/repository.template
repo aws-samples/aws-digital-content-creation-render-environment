@@ -2,11 +2,11 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: Provides configuration for a Deadline database and repository instance.
 
 Parameters:
-  VpcID:
-    Type: AWS::EC2::VPC::Id
-
   PrivateSubnet1:
     Type: AWS::EC2::Subnet::Id
+
+  RepositorySecurityGroup:
+    Type: AWS::EC2::SecurityGroup::Id
 
   InstanceType:
     Type: String
@@ -30,18 +30,10 @@ Parameters:
   Environment:
     Type: String
 
-Resources:
-  RepositorySecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: Security group for repository instance
-      VpcId: !Ref VpcID
-      Tags:
-        - Key: Name
-          Value: deadline-repository-sg
-        - Key: Environment
-          Value: !Ref Environment
+  EfsFileSystem:
+    Type: String
 
+Resources:
   RepositoryInstance:
     Type: AWS::EC2::Instance
     Metadata:
@@ -65,6 +57,20 @@ Resources:
                   e2label $(readlink -f /dev/xvdh) dcc-data
                   grep -q ^LABEL=dcc-data /etc/fstab || echo 'LABEL=dcc-data /data ext4 defaults' >> /etc/fstab
                   grep -q "^$(readlink -f /dev/xvdh) /data " /proc/mounts || mount /data
+              mode: '000755'
+              owner: root
+              group: root
+            /opt/scripts/dns.sh:
+              content: !Sub |
+                #!/usr/bin/env bash
+                results=1
+                while [[ $results != 0 ]]; do
+                  nslookup ${EfsFileSystem}.efs.${AWS::Region}.amazonaws.com
+                  results=$?
+                  if [[ $results = 1 ]]; then
+                    sleep 30s
+                  fi
+                done
               mode: '000755'
               owner: root
               group: root
@@ -115,7 +121,18 @@ Resources:
               command: sh /opt/scripts/ec2-mount-ebs-volume.sh > /opt/scripts/ec2-mount-ebs-volume.log 2>&1
               test: test -x /opt/scripts/ec2-mount-ebs-volume.sh  # check if filename exists and is executable
               ignoreErrors: false
-            02-samba_user:
+            02-wait_for_dns_propogation:
+              command: sh /opt/scripts/dns.sh
+            03-mount_efs:
+              command: !Sub |
+                #!/bin/bash -xe
+                EFS_DIRECTORY=/mnt/efs
+                mkdir $EFS_DIRECTORY
+                echo "${EfsFileSystem}:/ $EFS_DIRECTORY efs _netdev" >> /etc/fstab
+                mount -a -t efs defaults
+            04-set-permission-on-efs:
+              command: chown -R ec2-user:root /mnt/efs
+            05-samba_user:
               command: !Sub echo ${EC2UserPassword} | tee - | smbpasswd -s -a ec2-user
           services:
             sysvinit:
@@ -178,9 +195,14 @@ Resources:
           #!/bin/bash -xe
           # Update aws-cfn-bootstrap to the latest
           yum install -y aws-cfn-bootstrap
+
+          # Install efs-utils
+          yum install -y amazon-efs-utils
+
           # !!!Warning: issue with en/disabling SELinux in enforcing mode on the latest Amazon Linux 2 AMIs with version numbers 20191014 and 20191024
           # sed -i 's/enforcing/disabled/g' /etc/selinux/config /etc/selinux/config
           # sudo setenforce 0
+
           # Call cfn-init script to install files and packages
           /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource RepositoryInstance --configsets dcc_install --region ${AWS::Region}
           # Call cfn-signal script to send a signal with exit code
@@ -191,9 +213,6 @@ Resources:
         Timeout: "PT15M"
 
 Outputs:
-  RepositorySecurityGroup:
-    Value: !Ref RepositorySecurityGroup
-
   RepositoryInstancePrivateIp:
     Value: !GetAtt RepositoryInstance.PrivateIp
 

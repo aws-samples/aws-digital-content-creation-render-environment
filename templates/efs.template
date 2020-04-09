@@ -1,0 +1,84 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Provides shared Elastic File System for Repo, Workstation and Render nodes.
+
+Parameters:
+  VpcID:
+    Type: String
+
+  PrivateSubnet1:
+    Type: String
+
+  PrivateSubnet2:
+    Type: String
+
+  RepositorySecurityGroup:
+    Type: AWS::EC2::SecurityGroup::Id
+
+  RenderNodeSecurityGroup:
+    Type: AWS::EC2::SecurityGroup::Id
+
+  WorkstationSecurityGroup:
+    Type: AWS::EC2::SecurityGroup::Id
+
+  Environment:
+    Type: String
+
+Resources:
+  EfsSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref VpcID
+      GroupDescription: EFS Security group for mount targets
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 2049
+          ToPort: 2049
+          SourceSecurityGroupId: !Ref RepositorySecurityGroup
+        - IpProtocol: tcp
+          FromPort: 2049
+          ToPort: 2049
+          SourceSecurityGroupId: !Ref RenderNodeSecurityGroup
+        - IpProtocol: tcp
+          FromPort: 2049
+          ToPort: 2049
+          SourceSecurityGroupId: !Ref WorkstationSecurityGroup
+      Tags:
+        - Key: Name
+          Value: deadline-efs-sg
+        - Key: Environment
+          Value: !Ref Environment
+
+  EfsFileSystem:
+    Type: AWS::EFS::FileSystem
+    Properties:
+      Encrypted: true
+      PerformanceMode: generalPurpose
+      FileSystemTags:
+        - Key: Name
+          Value: deadline-efs
+
+  EfsMountTarget0:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref EfsFileSystem
+      SubnetId: !Ref PrivateSubnet1
+      SecurityGroups:
+        - !Ref EfsSecurityGroup
+        - !Ref RepositorySecurityGroup
+        - !Ref RenderNodeSecurityGroup
+        - !Ref WorkstationSecurityGroup
+
+  EfsMountTarget1:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref EfsFileSystem
+      SubnetId: !Ref PrivateSubnet2
+      SecurityGroups:
+        - !Ref EfsSecurityGroup
+        - !Ref RepositorySecurityGroup
+        - !Ref RenderNodeSecurityGroup
+        - !Ref WorkstationSecurityGroup
+
+Outputs:
+  EfsFileSystem:
+    Value: !Ref EfsFileSystem

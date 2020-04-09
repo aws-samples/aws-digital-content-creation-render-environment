@@ -132,7 +132,12 @@ Parameters:
       - g4dn.8xlarge
       - g4dn.12xlarge
       - g4dn.16xlarge
-    Default: g4dn.xlarge
+      - m5dn.xlarge
+      - m5dn.2xlarge
+      - m5dn.4xlarge
+      - m5dn.8xlarge
+      - m5dn.12xlarge
+      - m5dn.16xlarge
 
   AppVersion:
     Type: String
@@ -200,11 +205,6 @@ Mappings:
       AMZL2: ami-0e38b48473ea57778
       InstanceType: [c5.large, c4.large]
 
-    us-west-1:
-      NICEDCV: ami-07b60144ca51e5cfe
-      AMZL2: ami-01c94064639c71719
-      InstanceType: [c5.large, c4.large]
-
     us-west-2:
       NICEDCV: ami-002a233b37206a269
       AMZL2: ami-0e8c04af2729ff1bb
@@ -215,24 +215,9 @@ Mappings:
       AMZL2: ami-0af1df87db7b650f4
       InstanceType: [c5.large, c4.large]
 
-    ap-northeast-2:
-      NICEDCV: ami-0bbedf77cc9675e17
-      AMZL2: ami-0a93a08544874b3b7
-      InstanceType: [c5.large, c4.large]
-
-    ap-south-1:
-      NICEDCV: ami-0ec5a5a7fb3e1385d
-      AMZL2: ami-0d9462a653c34dab7
-      InstanceType: [c5.large, c4.large]
-
     ap-southeast-1:
       NICEDCV: ami-0ab0206f56fc9996c
       AMZL2: ami-0f02b24005e4aec36
-      InstanceType: [c5.large, c4.large]
-
-    ap-southeast-2:
-      NICEDCV: ami-01010fe90ef401d4f
-      AMZL2: ami-0f767afb799f45102
       InstanceType: [c5.large, c4.large]
 
     eu-central-1:
@@ -275,24 +260,23 @@ Resources:
       TemplateURL: ../templates/security-groups-helper.template
       TimeoutInMinutes: 10
       Parameters:
-        LicenseServerSecurityGroup: !GetAtt LicenseServerStack.Outputs.LicenseServerSecurityGroup
-        RepositorySecurityGroup: !GetAtt RepositoryStack.Outputs.RepositorySecurityGroup
+        VpcID: !GetAtt VPCStack.Outputs.VpcID
+        OnPremIp: !Ref OnPremIp
+        Environment: !Ref Environment
 
-  RepositoryStack:
+  EfsStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: ../templates/repository.template
-      TimeoutInMinutes: 30
+      TemplateURL: ../templates/efs.template
+      TimeoutInMinutes: 20
       Parameters:
         VpcID: !GetAtt VPCStack.Outputs.VpcID
         PrivateSubnet1: !GetAtt VPCStack.Outputs.PrivateSubnet1
-        InstanceType: !Ref RepositoryInstanceType
-        InstanceAMI: !FindInMap [AMIRegionMap, !Ref 'AWS::Region', AMZL2]
-        EC2InstanceProfile: !GetAtt IAMStack.Outputs.EC2InstanceProfile
-        EC2UserPassword: !Ref EC2UserPassword #pragma: allowlist secret
-        AppVersion: !Ref AppVersion
+        PrivateSubnet2: !GetAtt VPCStack.Outputs.PrivateSubnet2
+        RepositorySecurityGroup: !GetAtt SecurityGroupsHelperStack.Outputs.RepositorySecurityGroup
+        RenderNodeSecurityGroup: !GetAtt SecurityGroupsHelperStack.Outputs.RenderNodeSecurityGroup
+        WorkstationSecurityGroup: !GetAtt SecurityGroupsHelperStack.Outputs.WorkstationSecurityGroup
         Environment: !Ref Environment
-        ArtefactBucketName: !Ref ArtefactBucketName
 
   LicenseServerStack:
     Type: AWS::CloudFormation::Stack
@@ -300,8 +284,8 @@ Resources:
       TemplateURL: ../templates/license-server.template
       TimeoutInMinutes: 30
       Parameters:
-        VpcID: !GetAtt VPCStack.Outputs.VpcID
         PublicSubnet1: !GetAtt VPCStack.Outputs.PublicSubnet1
+        LicenseServerSecurityGroup: !GetAtt SecurityGroupsHelperStack.Outputs.LicenseServerSecurityGroup
         InstanceType: !Ref LicenseServerInstanceType
         InstanceAMI: !FindInMap [AMIRegionMap, !Ref 'AWS::Region', AMZL2]
         EC2InstanceProfile: !GetAtt IAMStack.Outputs.EC2InstanceProfile
@@ -310,26 +294,22 @@ Resources:
         ArtefactBucketName: !Ref ArtefactBucketName
         Environment: !Ref Environment
 
-  WorkstationStack:
+  RepositoryStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: ../templates/workstation.template
+      TemplateURL: ../templates/repository.template
       TimeoutInMinutes: 30
       Parameters:
-        VpcID: !GetAtt VPCStack.Outputs.VpcID
-        PublicSubnet1: !GetAtt VPCStack.Outputs.PublicSubnet1
-        InstanceType: !Ref WorkstationInstanceType
-        InstanceAMI: !FindInMap [AMIRegionMap, !Ref 'AWS::Region', NICEDCV]
-        WorkstationInstanceProfile: !GetAtt IAMStack.Outputs.WorkstationInstanceProfile
+        PrivateSubnet1: !GetAtt VPCStack.Outputs.PrivateSubnet1
+        RepositorySecurityGroup: !GetAtt SecurityGroupsHelperStack.Outputs.RepositorySecurityGroup
+        EfsFileSystem: !GetAtt EfsStack.Outputs.EfsFileSystem
+        InstanceType: !Ref RepositoryInstanceType
+        InstanceAMI: !FindInMap [AMIRegionMap, !Ref 'AWS::Region', AMZL2]
+        EC2InstanceProfile: !GetAtt IAMStack.Outputs.EC2InstanceProfile
+        EC2UserPassword: !Ref EC2UserPassword #pragma: allowlist secret
         AppVersion: !Ref AppVersion
         Environment: !Ref Environment
         ArtefactBucketName: !Ref ArtefactBucketName
-        RepositoryInstancePrivateIp: !GetAtt RepositoryStack.Outputs.RepositoryInstancePrivateIp
-        LicenseServerInstancePrivateIp: !GetAtt LicenseServerStack.Outputs.LicenseServerInstancePrivateIp
-        EC2UserPassword: !Ref EC2UserPassword #pragma: allowlist secret
-        RepositorySecurityGroup: !GetAtt RepositoryStack.Outputs.RepositorySecurityGroup
-        LicenseServerSecurityGroup: !GetAtt LicenseServerStack.Outputs.LicenseServerSecurityGroup
-        OnPremIp: !Ref OnPremIp
 
   RenderNodeStack:
     Type: AWS::CloudFormation::Stack
@@ -341,9 +321,10 @@ Resources:
           Fn::Join:
             - ','
             - !Ref AvailabilityZones
-        VpcID: !GetAtt VPCStack.Outputs.VpcID
         PrivateSubnet1: !GetAtt VPCStack.Outputs.PrivateSubnet1
         PrivateSubnet2: !GetAtt VPCStack.Outputs.PrivateSubnet2
+        RenderNodeSecurityGroup: !GetAtt SecurityGroupsHelperStack.Outputs.RenderNodeSecurityGroup
+        EfsFileSystem: !GetAtt EfsStack.Outputs.EfsFileSystem
         InstanceTypes:
           Fn::Join:
             - ','
@@ -356,10 +337,27 @@ Resources:
         LicenseServerInstancePrivateIp: !GetAtt LicenseServerStack.Outputs.LicenseServerInstancePrivateIp
         RepositoryInstancePrivateIp: !GetAtt RepositoryStack.Outputs.RepositoryInstancePrivateIp
         EC2UserPassword: !Ref EC2UserPassword #pragma: allowlist secret
-        RepositorySecurityGroup: !GetAtt RepositoryStack.Outputs.RepositorySecurityGroup
-        LicenseServerSecurityGroup: !GetAtt LicenseServerStack.Outputs.LicenseServerSecurityGroup
         ArtefactBucketName: !Ref ArtefactBucketName
         RenderNodeTargetCapacity: !Ref RenderNodeTargetCapacity
+
+  WorkstationStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ../templates/workstation.template
+      TimeoutInMinutes: 30
+      Parameters:
+        PublicSubnet1: !GetAtt VPCStack.Outputs.PublicSubnet1
+        WorkstationSecurityGroup: !GetAtt SecurityGroupsHelperStack.Outputs.WorkstationSecurityGroup
+        EfsFileSystem: !GetAtt EfsStack.Outputs.EfsFileSystem
+        InstanceType: !Ref WorkstationInstanceType
+        InstanceAMI: !FindInMap [AMIRegionMap, !Ref 'AWS::Region', NICEDCV]
+        WorkstationInstanceProfile: !GetAtt IAMStack.Outputs.WorkstationInstanceProfile
+        AppVersion: !Ref AppVersion
+        Environment: !Ref Environment
+        ArtefactBucketName: !Ref ArtefactBucketName
+        RepositoryInstancePrivateIp: !GetAtt RepositoryStack.Outputs.RepositoryInstancePrivateIp
+        LicenseServerInstancePrivateIp: !GetAtt LicenseServerStack.Outputs.LicenseServerInstancePrivateIp
+        EC2UserPassword: !Ref EC2UserPassword #pragma: allowlist secret
 
 Outputs:
   TemplateType:

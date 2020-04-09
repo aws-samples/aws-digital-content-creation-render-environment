@@ -2,11 +2,11 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: Provides configuration for a Deadline license server instance.
 
 Parameters:
-  VpcID:
-    Type: AWS::EC2::VPC::Id
-
   PublicSubnet1:
     Type: AWS::EC2::Subnet::Id
+
+  LicenseServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup::Id
 
   InstanceType:
     Type: String
@@ -31,17 +31,6 @@ Parameters:
     Type: String
 
 Resources:
-  LicenseServerSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: Security group for license server instance
-      VpcId: !Ref VpcID
-      Tags:
-        - Key: Name
-          Value: license-server-sg
-        - Key: Environment
-          Value: !Ref Environment
-
   LicenseServerInstance:
     Type: AWS::EC2::Instance
     Metadata:
@@ -152,9 +141,6 @@ Resources:
         Timeout: "PT10M"
 
 Outputs:
-  LicenseServerSecurityGroup:
-    Value: !Ref LicenseServerSecurityGroup
-
   LicenseServerInstancePrivateIp:
     Value: !GetAtt LicenseServerInstance.PrivateIp
 
