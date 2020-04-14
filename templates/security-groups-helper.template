@@ -15,7 +15,7 @@ Resources:
   LicenseServerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Security group for license server instance
+      GroupDescription: Security group for DL License Server instance
       VpcId: !Ref VpcID
       Tags:
         - Key: Name
@@ -26,7 +26,7 @@ Resources:
   RepositorySecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Security group for repository instance
+      GroupDescription: Security group for DL Repository instance
       VpcId: !Ref VpcID
       Tags:
         - Key: Name
@@ -37,7 +37,7 @@ Resources:
   RenderNodeSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Security group for workstation instance
+      GroupDescription: Security group for DL Render Node instance
       VpcId: !Ref VpcID
       Tags:
         - Key: Name
@@ -48,7 +48,7 @@ Resources:
   WorkstationSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Security group for workstation instance
+      GroupDescription: Security group for DL Workstation instance
       VpcId: !Ref VpcID
       SecurityGroupIngress:
         - IpProtocol: tcp
@@ -61,18 +61,44 @@ Resources:
         - Key: Environment
           Value: !Ref Environment
 
+# <-- Grant access for Deadline Repository -->
   RepositoryToLicenseServerIngress:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
       GroupId: !Ref LicenseServerSecurityGroup
-      Description: render-scheduler-sg
+      Description: deadline-repository-sg
       IpProtocol: '-1'
       SourceSecurityGroupId: !Ref RepositorySecurityGroup
 
+  RepositoryToRenderNodeIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref RenderNodeSecurityGroup
+      Description: deadline-repository-sg
+      IpProtocol: '-1'
+      SourceSecurityGroupId: !Ref RepositorySecurityGroup
+
+  RepositoryToWorkstationIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref WorkstationSecurityGroup
+      Description: deadline-repository-sg
+      IpProtocol: '-1'
+      SourceSecurityGroupId: !Ref RepositorySecurityGroup
+
+# <-- Grant access for Deadline Render Node -->
   RenderNodeToRepositoryIngress:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
       GroupId: !Ref RepositorySecurityGroup
+      Description: deadline-rendernode-sg
+      IpProtocol: '-1'
+      SourceSecurityGroupId: !Ref RenderNodeSecurityGroup
+
+  RenderNodeToWorkstationIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref WorkstationSecurityGroup
       Description: deadline-rendernode-sg
       IpProtocol: '-1'
       SourceSecurityGroupId: !Ref RenderNodeSecurityGroup
@@ -84,6 +110,15 @@ Resources:
       Description: deadline-rendernode-sg
       IpProtocol: '-1'
       SourceSecurityGroupId: !Ref RenderNodeSecurityGroup
+
+# <-- Grant access for Deadline Workstation -->
+  WorkstationToRenderNodeIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref RenderNodeSecurityGroup
+      Description: deadline-workstation-sg
+      IpProtocol: '-1'
+      SourceSecurityGroupId: !Ref WorkstationSecurityGroup
 
   WorkstationToRepositoryIngress:
     Type: AWS::EC2::SecurityGroupIngress
