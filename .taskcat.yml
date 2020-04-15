@@ -10,9 +10,28 @@ project:
     - eu-central-1
     - eu-west-1
 tests:
-  taskcat-yaml:
+  test-g4dn.xlarge:
+    auth:
+      default: builders
     template: ./main/root-packaged.template
     parameters:
       AvailabilityZones: $[taskcat_genaz_2]
       StackName: TaskcatStack
       EC2UserPassword: $[taskcat_genpass_8A]
+      WorkstationInstanceType: g4dn.xlarge
+    regions:
+      - us-east-1
+      - eu-west-1
+
+  test-m5dn.xlarge:
+    auth:
+      default: builders
+    template: ./main/root-packaged.template
+    parameters:
+      AvailabilityZones: $[taskcat_genaz_2]
+      StackName: TaskcatStack
+      EC2UserPassword: $[taskcat_genpass_8A]
+      WorkstationInstanceType: m5dn.xlarge
+    regions:
+      - us-east-1
+      - eu-west-1

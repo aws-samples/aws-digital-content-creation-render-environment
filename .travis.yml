@@ -22,7 +22,7 @@ deploy:
   - provider: releases
     api_key:
       secure: AvwdNc3qrDFFNlVndTEvxs/zyEyp0e4vECpJJrlcTucCVbhLz74h1AiQGZVZ12/43EaApKxrMz7Zsb6mIGubQdbfZRhruijb5Nut+TTo0zaHaa837dig1RVGl5yjTBLFhkq44I9vHIGiN54/xXRANRKP6UEXzsBrNK523h6mvUsR2whKHe/dFVySMPG3Hm3/89duQVRwRgSEMWbxx9Eq6w5FvDaP81nGIRadhTotARjJVr0XjvH1+kBxrcZVnanDBoWbux2oxhcja5dhzOFdezIsrz1pnC/CQ55OD/EZDo9N2+/tXDF2c+HcR0tPffdO//INB8Ps56JRGJ58RanfR+GxzJQievdgVhKuY62KdbvuzEM+p4wtmPR+kqgwM4XEQC26YFIB66NUu0wN8hfcpJYJlQxoe00eK1X5PbRyBCJOIZkZ8ot/kXZMb+Iaxm/w2nc+T5Lqris1Se5n8fudja4hAC8fJsUCmjq+KS8vfi8AEwooNA+81E7BP/4Okt1QBEXaS6GIBrcPVrtB+VHRnAIQdptXmTBtKv7KsITflBrPZQ5uJcAUYKVsfl3yqlTRjC1DuoN7v5znzEY6sleDtRk8TWEHdSV9TxI7coEv94nhpocM8DXQbq8kUZpzUABrOgKju0kdzT/nZQ4tyV04RXj4IugHuwTbwVt8B9sOto0=
-    file: "$VERSION.zip"
+    file: $VERSION.zip
     skip_cleanup: true
     on:
       branch: master

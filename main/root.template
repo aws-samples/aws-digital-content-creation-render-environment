@@ -138,6 +138,7 @@ Parameters:
       - m5dn.8xlarge
       - m5dn.12xlarge
       - m5dn.16xlarge
+    Default: g4dn.xlarge
 
   AppVersion:
     Type: String
