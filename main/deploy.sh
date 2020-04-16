@@ -21,4 +21,5 @@ aws cloudformation deploy \
   --parameter-overrides \
     AvailabilityZones=${AWS_REGION}a,${AWS_REGION}b \
     EC2UserPassword=${EC2_USER_PASSWORD} \
-    RenderNodeTargetCapacity=${RENDER_NODE_TARGET_CAPACITY}
+    RenderNodeTargetCapacity=${RENDER_NODE_TARGET_CAPACITY} \
+    RenderNodeInstanceType=${RENDER_NODE_INSTANCE_TYPE}

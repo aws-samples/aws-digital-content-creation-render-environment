@@ -189,12 +189,12 @@ Parameters:
       - c5.2xlarge,c4.2xlarge
       - c5.4xlarge,c4.4xlarge
       - c5.9xlarge,c4.8xlarge
-    Default: c5.2xlarge,c4.2xlarge
+    Default: c5.4xlarge,c4.4xlarge
 
   RenderNodeTargetCapacity:
     Type: String
     Description: The number of instances in the spot fleet
-    Default: 2
+    Default: 4
 
   Environment:
     Type: String
