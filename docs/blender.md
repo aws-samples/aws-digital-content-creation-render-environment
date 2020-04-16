@@ -3,7 +3,7 @@
 This will involve using the workstation to set up a shot to do a test render.
 
 1. Log into your **Workstation** using **ec2-user** user account.
-1. Create a `test_project` folder in **projects** directory `/data/DeadlineRepository/jobs/`
+1. Open the terminal and create a `test_project` folder in **projects** directory `/data/DeadlineRepository/jobs/`
 
    ```
    mkdir -p  /mnt/efs/test_project
@@ -16,38 +16,61 @@ This will involve using the workstation to set up a shot to do a test render.
    ```
 
 1. The Deadline Blender submitter needs to be re-installed for each user, so you should do that now:
-    * Go **Edit → Preferences...**
-    * Click on *Add-Ons* in the left panel
-    * Click *Install...*
+    * Go to **Edit → Preferences...**
+    * Click on **Add-ons** in the left panel
+    * Click **Install...**
+      ![install-addon.png](./install-addon.png)
     * Navigate to **/data/DeadlineRepository/submission/Blender/Client/**
-    * Choose *DeadlineBlenderClient.py*
-    * Click *Install Add-on*
-    * Click the checkbox next to *Render: Submit Blender to Deadline* add-on and close the Preferences window
+    * Choose **DeadlineBlenderClient.py**
+    * Click **Install Add-on**
+      ![blender-client.png](./blender-client.png)
+    * Click the checkbox next to **Render: Submit Blender to Deadline** add-on and close the Preferences window
+      ![addon-checkbox.png](./addon-checkbox.png)
 
-1. For your test render, you can just use the default blender file with a cube and camera (this is just a test to make sure everything is working correctly. If you’d like to make a super fancy file, you’re more than welcome to.)
+## Test the Blender set up
+
+1. For your test render, you can just use the default blender file with a cube and camera (this is just a test to make sure everything is working correctly. Later on you will make a super fancy file, using Blender Demo library.)
 1. Set your output settings:
     * In the **Properties** Panel on the right, click on **Render Properties** (the icon looks like an old-timey television)
     * For **Render Engine** choose **Cycles**
-
-    ![render-engine.png](./render-engine.png)
-
-    * Click on *Output Properties* (the icon looks like an inkjet printer).
-    * Under *Output* change the value to **//test.####**
-    * Now save the file as `test.blend` in `/data/DeadlineRepository/jobs/projects/test_project/`
-
-    ![save-blender-file.png](./save-blender-file.png)
+      ![blender-scene.png](./blender-scene.png)
+    * Click on **Output Properties** (the icon looks like an ink-jet printer)
+    * Under **Output** change the value to **//####.png**
+      ![blender-output.png](./blender-output.png)
+    * Now save the file with `Shift Ctrl S` as `test.blend` in `/mnt/efs/test_project/`
+      ![blender-file.png](./blender-file.png)
 
 1. Submit your render
-    * Choose **Render→Submit to Deadline**
+    * Choose **Render → Submit to Deadline**
     * Set the **Group** to **linux_workers**
     * Set the **Frame List** to **1-10**
-    * Make sure the **Blender File** and **Output File** is set properly.
-    * Click **Submit**
+    * Make sure the **Blender File** and **Output File** is set properly
+      ![blender-job.png](./blender-job.png)
+    * Click **Submit** and **Close** the window
 
-    ![submit-job.png](./submit-job.png)
+1. Go back to Deadline monitor application. You should see your render going in the **Deadline Monitor**
 
-1. You should see your render going in the **Deadline Monitor**
+    ![deadline-job.png](./deadline-job.png)
 
-    ![render-job.png](./render-job.png)
+## Render something fancy
 
- >Congratulations, you have successfully send a job to render nodes. You can now go back to the main [README](../README.md).
+Now that our rendering farm is set up, let's render something cool. Blender provides ready to render [Demo Files](https://www.blender.org/download/demo-files/), so let's go ahead and get one:
+
+1. Open the **Google Chrome browser**  and go to https://cloud.blender.org/p/gallery/59819ee681191741ad07d283
+1. Click **Download**
+1. Open the terminal window and unzip the file to `/mnt/efs/test_project` folder
+   ```
+   unzip ~/Downloads/Blender\ 2.zip -d /mnt/efs/test_project/
+   ```
+1. In Blender, go to `File -> Open` and inside **Splash279** folder open the `splash279.blend` file
+1. Click on **Output Properties** and change the value to `//####.png`
+1. Choose **Render -> Submit to Deadline**
+1. Set the **Group** to **linux_workers**
+1. Make sure the **Blender File** and **Output File** is set properly
+1. Click **Submit** and **Close** the window
+1. Go back to Deadline monitor application. You should see your render going in the **Deadline Monitor**
+1. Once the job is finished, **right click** on `Task ID 10 | Frame 11` to view the finished outcome of the render job
+   ![splash279-job.png](./splash279-job.png)
+
+
+ > Congratulations, you have successfully sent a job to render nodes. You can now go back to the main [README](../README.md).
