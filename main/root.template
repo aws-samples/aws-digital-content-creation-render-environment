@@ -194,7 +194,7 @@ Parameters:
   RenderNodeTargetCapacity:
     Type: String
     Description: The number of instances in the spot fleet
-    Default: 4
+    Default: 2
 
   Environment:
     Type: String

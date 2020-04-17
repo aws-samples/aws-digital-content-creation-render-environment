@@ -66,24 +66,26 @@ This will involve using the workstation to set up a shot to do a test render.
 
 ## Render something fancy
 
-Now that our rendering farm is set up, let's render something cool. Blender provides ready to render [Demo Files](https://www.blender.org/download/demo-files/), so let's go ahead and get one:
+Now that our rendering farm is set up, let's render something cool. Blender provides ready to render [Demo Files](https://www.blender.org/download/demo-files/), so let's go ahead and use one.
 
-1. Open the **Google Chrome browser**  and go to https://cloud.blender.org/p/gallery/59819ee681191741ad07d283
-1. Click **Download**
-1. Open the terminal window and unzip the file to `/mnt/efs/test_project` folder
-   ```
-   unzip ~/Downloads/Blender\ 2.zip -d /mnt/efs/test_project/
-   ```
-1. In Blender, go to `File -> Open` and inside **Splash279** folder open the `splash279.blend` file
+1. The sample file can be found in `/mnt/efs/assets` folder
+1. In Blender, go to `File -> Open` and inside **bmw272** folder open the `bmw272.cpu.blend` file
 1. Click on **Output Properties** and change the value to `//####.png`
 1. Choose **Render -> Submit to Deadline**
 1. Set the **Group** to **linux_workers**
-1. Make sure the **Blender File** and **Output File** is set properly
+1. Change the **Frame List**to **1-2**
+1. Make sure the **Blender File** and **Output File** are set properly
+
+   ![bmw-job-submit.png](./bmw-job-submit.png)
+
 1. Click **Submit** and **Close** the window
 1. Go back to Deadline monitor application. You should see your render going in the **Deadline Monitor**
-1. Once the job is finished, **right click** on `Task ID 10 | Frame 11` to view the finished outcome of the render job
+1. Once the job is finished, **right click** on `Task ID 01 | Frame 2` to view the finished outcome of the render job
 
-   ![splash279-job.png](./splash279-job.png)
+   ![bmw-job.png](./bmw-job.png)
 
+1. It will take about 4 minutes for the job to finish. Below is the outcome of the popular BMW demo by Mike Pan rendered.
+
+   ![bmw-demo.png](./bmw-demo.png)
 
  > Congratulations, you have successfully sent a job to render nodes. You can now go back to the main [README](../README.md).

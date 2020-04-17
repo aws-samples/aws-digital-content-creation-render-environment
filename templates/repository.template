@@ -43,6 +43,7 @@ Resources:
             - instance_prep
             - artefacts_download
             - app_install
+            - post_install
         instance_prep:
           packages:
             yum:
@@ -170,6 +171,13 @@ Resources:
                 chmod -R 500 /data/thinkbox/DeadlineRepository10
                 cd /data/thinkbox/DeadlineRepository10 && chmod -R 700 jobs/ jobsArchived/ reports/
               ignoreErrors: false
+        post_install:
+          sources:
+            /mnt/efs/assets: !Sub https://${ArtefactBucketName}.s3.amazonaws.com/BMW27_2.blend.zip
+          commands:
+            01-set-assets-folder-permissions:
+              command: chown -R ec2-user:root /mnt/efs/assets
+              ignoreErrors: true
     Properties:
       BlockDeviceMappings:
         - DeviceName: /dev/xvdh

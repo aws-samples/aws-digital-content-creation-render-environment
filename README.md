@@ -51,6 +51,8 @@ You are responsible for the cost of the AWS services used while running this sam
 
 1. Deploy the latest CloudFormation template by following the link below for your preferred AWS region:
 
+   > It will take about 13 minutes for the deployment to finish.
+
     |Region|Launch Template|
     |------|---------------|
     |**US East (N. Virginia)** (us-east-1) | [![Launch Stack](docs/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=aws-digital-content-creation-render-environment&templateURL=https://s3.amazonaws.com/solution-builders-us-east-1/aws-digital-content-creation-render-environment/latest/root.template)|
@@ -81,7 +83,7 @@ You are responsible for the cost of the AWS services used while running this sam
     |Deadline license key | 123456789012 | The Deadline license key. |
     |Workstation instance type | g4dn.xlarge | The EC2 instance type for the Deadline workstation. |
     |Render node instance type | c5.4xlarge,c4.4xlarge | The EC2 instance type for the Deadline Render node. |
-    |Render node capacity | 10 | The number of instances in the Spot Fleet. |
+    |Render node capacity | 2 | The number of instances in the Spot Fleet. |
     |ArtefactBucketName | aws-digital-content-creation-render-environment | The S3 bucket you created for your copy of Quick Start assets, if you decide to customize or extend the solution for your own use. |
     |EC2UserPassword| `Requires input` | The **ec2-user** password for remote access to NICEDCV server and to access Deadline Repository samba share. |
     |Environment | DEV | The type of environment to tag your infrastructure with. You can specify DEV (development), TEST (test), or PROD (production). |
