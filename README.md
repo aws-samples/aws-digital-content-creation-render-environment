@@ -51,6 +51,8 @@ You are responsible for the cost of the AWS services used while running this sam
 
 1. Deploy the latest CloudFormation template by following the link below for your preferred AWS region:
 
+   > It will take about 13 minutes for the deployment to finish.
+
     |Region|Launch Template|
     |------|---------------|
     |**US East (N. Virginia)** (us-east-1) | [![Launch Stack](docs/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=aws-digital-content-creation-render-environment&templateURL=https://s3.amazonaws.com/solution-builders-us-east-1/aws-digital-content-creation-render-environment/latest/root.template)|
@@ -74,17 +76,18 @@ You are responsible for the cost of the AWS services used while running this sam
     |Public Subnet 2 CIDR | 10.0.1.0/24 | The CIDR block for the public subnet located in Availability Zone 2 of the VPC. |
     |Private Subnet 1 CIDR | 10.0.2.0/24 | The CIDR block for the private subnet located in Availability Zone 1 of the VPC. |
     |Private Subnet 2 CIDR | 10.0.3.0/24 | The CIDR block for the private subnet located in Availability Zone 2 of the VPC. |
-    |Render scheduler instance type | m5.xlarge | The EC2 instance type for the Deadline repository. |
+    |Render scheduler instance type | m5.2xlarge | The EC2 instance type for the Deadline repository. |
     |Deadline application version | 10.1.3.6 | The version of Deadline application. |
-    |License server instance type| m5.xlarge | The EC2 instance type for the License server. |
+    |License server instance type| m5.large | The EC2 instance type for the License server. |
     |License server version | 1.1 | The version of License server. |
     |Deadline license key | 123456789012 | The Deadline license key. |
     |Workstation instance type | g4dn.xlarge | The EC2 instance type for the Deadline workstation. |
+    |Render node instance type | c5.4xlarge,c4.4xlarge | The EC2 instance type for the Deadline Render node. |
+    |Render node capacity | 2 | The number of instances in the Spot Fleet. |
     |ArtefactBucketName | aws-digital-content-creation-render-environment | The S3 bucket you created for your copy of Quick Start assets, if you decide to customize or extend the solution for your own use. |
     |EC2UserPassword| `Requires input` | The **ec2-user** password for remote access to NICEDCV server and to access Deadline Repository samba share. |
     |Environment | DEV | The type of environment to tag your infrastructure with. You can specify DEV (development), TEST (test), or PROD (production). |
     |OnPremIp| 0.0.0.0/0 | On-premises IP to unable access to workstation. |
-    |RenderNodeTargetCapacity| 2 | The number of instances in the Spot Fleet. |
 
 1. When completed, click **Next**.
 1. [Configure stack options](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-add-tags.html) if desired, then click **Next**.
@@ -103,12 +106,12 @@ You are responsible for the cost of the AWS services used while running this sam
 ### Login to Workstation and Start Deadline application
 
 1. Note the **WorkstationPublicIP** displayed in the **Outputs** tab of the **root** stack (it is the one without word **NESTED**).
-1. In the web browser, paste the **WorkstationPublicIP** and log in to the workstation with **ec2-user** credentials.
-1. Start the Deadline application from `Application -> Other -> Deadline Monitor 10`
+1. On the web browser or in the [NICE DCV Client](https://download.nice-dcv.com/), paste the **WorkstationPublicIP** and log in to the workstation with **ec2-user** credentials.
+   ![nicedcv-login-png](./docs/nicedcv-login.png)
 
 ## Render Something to Test the Setup
 
-Now that you’ve got most of the pieces together, it’s a good idea to test the setup to make sure you can submit a render from your workstation, have the Render Scheduler pick it up, and run the render on your Worker.
+Now you’ve got most of the pieces together, it’s a good idea to test the setup to make sure you can submit a render from your workstation, have the Render Scheduler pick it up, and run the render on your Worker.
 
 For this part, you will use [Blender](https://www.blender.org/) to render something.
 
@@ -139,7 +142,7 @@ You can modify the taskcat configuration file with your own tests here [.taskcat
 
 Follow these steps to clean up created resources:
 
-1. In in the **[CloudFormation console](https://console.aws.amazon.com/cloudformation)**, select the the **root** stack you have created. For example `aws-digital-content-creation-render-environment `.
+1. In the **[CloudFormation console](https://console.aws.amazon.com/cloudformation)**, select the the **root** stack you have created. For example `aws-digital-content-creation-render-environment `.
 1. The **root** stack will handle the deletion of all the **children** stacks for you.
 1. In the top right corner, click on **Delete**.
 1. In the pop up window click on **Delete stack**.

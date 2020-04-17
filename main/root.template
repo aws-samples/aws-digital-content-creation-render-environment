@@ -6,7 +6,7 @@ Globals:
   Function:
     Environment:
       Variables:
-        VERSION: '0.23'
+        VERSION: '1.0'
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -124,7 +124,7 @@ Parameters:
   RepositoryInstanceType:
     Type: String
     Description: Render scheduler instance type
-    Default: m5n.2xlarge
+    Default: m5.2xlarge
 
   EC2UserPassword:
     Type: String
@@ -160,7 +160,7 @@ Parameters:
   LicenseServerInstanceType:
     Type: String
     Description: License server instance type
-    Default: m5n.large
+    Default: m5.large
 
   LicenseServerVersion:
     Type: String
@@ -189,7 +189,7 @@ Parameters:
       - c5.2xlarge,c4.2xlarge
       - c5.4xlarge,c4.4xlarge
       - c5.9xlarge,c4.8xlarge
-    Default: c5.2xlarge,c4.2xlarge
+    Default: c5.4xlarge,c4.4xlarge
 
   RenderNodeTargetCapacity:
     Type: String
