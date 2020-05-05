@@ -6,7 +6,7 @@ Globals:
   Function:
     Environment:
       Variables:
-        VERSION: '1.0'
+        VERSION: '1.1'
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -141,12 +141,6 @@ Parameters:
       - g4dn.8xlarge
       - g4dn.12xlarge
       - g4dn.16xlarge
-      - m5dn.xlarge
-      - m5dn.2xlarge
-      - m5dn.4xlarge
-      - m5dn.8xlarge
-      - m5dn.12xlarge
-      - m5dn.16xlarge
     Default: g4dn.xlarge
 
   AppVersion:
