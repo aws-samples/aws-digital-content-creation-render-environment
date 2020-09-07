@@ -1,6 +1,7 @@
-/main/root-packaged.template
-/main/.env
+# Local development
 /artefacts/
 /.idea*
 /.taskcat/
 /taskcat_outputs/
+/.custom.mk
+/cfn/packaged.template

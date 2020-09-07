@@ -2,13 +2,8 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: AWS Digital Content Creation Architecture - AWS ThinkBox Deadline. (uksb-1qgdqu75l)
 Transform: AWS::Serverless-2016-10-31
 
-Globals:
-  Function:
-    Environment:
-      Variables:
-        VERSION: '1.1'
-
 Metadata:
+  Version: 1.2.0
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
@@ -240,13 +235,13 @@ Resources:
   IAMStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: ../templates/iam.template
+      TemplateURL: iam.template
       TimeoutInMinutes: 10
 
   VPCStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: ../templates/vpc.template
+      TemplateURL: vpc.template
       TimeoutInMinutes: 20
       Parameters:
         AvailabilityZones:
@@ -263,7 +258,7 @@ Resources:
   SecurityGroupsHelperStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: ../templates/security-groups-helper.template
+      TemplateURL: security-groups-helper.template
       TimeoutInMinutes: 10
       Parameters:
         VpcID: !GetAtt VPCStack.Outputs.VpcID
@@ -273,7 +268,7 @@ Resources:
   EfsStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: ../templates/efs.template
+      TemplateURL: efs.template
       TimeoutInMinutes: 20
       Parameters:
         VpcID: !GetAtt VPCStack.Outputs.VpcID
@@ -287,7 +282,7 @@ Resources:
   LicenseServerStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: ../templates/license-server.template
+      TemplateURL: license-server.template
       TimeoutInMinutes: 30
       Parameters:
         PublicSubnet1: !GetAtt VPCStack.Outputs.PublicSubnet1
@@ -303,7 +298,7 @@ Resources:
   RepositoryStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: ../templates/repository.template
+      TemplateURL: repository.template
       TimeoutInMinutes: 30
       Parameters:
         PrivateSubnet1: !GetAtt VPCStack.Outputs.PrivateSubnet1
@@ -320,7 +315,7 @@ Resources:
   RenderNodeStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: ../templates/render-node.template
+      TemplateURL: render-node.template
       TimeoutInMinutes: 30
       Parameters:
         AvailabilityZones:
@@ -349,7 +344,7 @@ Resources:
   WorkstationStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: ../templates/workstation.template
+      TemplateURL: workstation.template
       TimeoutInMinutes: 30
       Parameters:
         PublicSubnet1: !GetAtt VPCStack.Outputs.PublicSubnet1

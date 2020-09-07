@@ -13,7 +13,7 @@ tests:
   test-g4dn.xlarge:
     auth:
       default: builders
-    template: ./main/root-packaged.template
+    template: ./cfn/packaged.template
     parameters:
       AvailabilityZones: $[taskcat_genaz_2]
       StackName: TaskcatStack
@@ -26,7 +26,7 @@ tests:
   test-m5dn.xlarge:
     auth:
       default: builders
-    template: ./main/root-packaged.template
+    template: ./cfn/packaged.template
     parameters:
       AvailabilityZones: $[taskcat_genaz_2]
       StackName: TaskcatStack
