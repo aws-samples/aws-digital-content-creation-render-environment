@@ -6,16 +6,16 @@ before_script:
   - python --version
   - pip install -r requirements.txt
 script:
-  - cfn-lint main/root.template
+  - cfn-lint cfn/main.template
   - |
     if [ $TRAVIS_PULL_REQUEST == true ] && [ $TRAVIS_BRANCH != "master" ]; then
-      VERSION="v$(cat main/root.template | shyaml get-value Globals.Function.Environment.Variables.VERSION)"
+      VERSION="v$(cat cfn/main.template | shyaml get-value Metadata.Version)"
       git tag $VERSION
     fi
 before_deploy:
   - mkdir -p ~/.aws
   - cat >> ~/.aws/config <<<"[profile publisher]"$'\n'"credential_source=Environment"$'\n'"role_arn=${ROLE_ARN}"$'\n'"duration_seconds=900"
-  - VERSION="v$(cat main/root.template | shyaml get-value Globals.Function.Environment.Variables.VERSION)"
+  - VERSION="v$(cat cfn/main.template | shyaml get-value Metadata.Version)"
   - if [ -z "$TRAVIS_TAG" ]; then git tag $VERSION; fi
   - zip -r "$VERSION.zip" -@ < ci/include.lst
 deploy:

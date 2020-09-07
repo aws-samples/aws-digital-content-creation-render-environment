@@ -14,6 +14,7 @@ Furthermore, the solution comes with [Blender](https://www.blender.org/) install
     - [Deployment](#deployment)
     - [Login to Workstation and Start Deadline application](#login-to-workstation-and-start-deadline-application)
 - [Render Something to Test the Setup](#render-something-to-test-the-setup)
+- [Local Development](#local-development)
 - [Running the tests](#running-the-tests)
 - [Clean up](#clean-up)
 - [Contributing](#contributing)
@@ -24,23 +25,12 @@ An overview of the architecture:
 
 ![architecture-png](./docs/aws-digital-content-creation-render-environment.png)
 
+
 ## Getting Started
-
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
-
-```
-# Create a S3 bucket
-aws s3 mb s3://${BUCKET_NAME}
-
-# Create an `.env` file and populate it with your own values
-cp ./main/.env.example ./main/.env
-
-# run the deployment script
-./main/deploy.sh
-```
 
 ### Prerequisites
 To deploy the application you will require an AWS account. If you don’t already have an AWS account, create one at <https://aws.amazon.com> by following the on-screen instructions. Your access to the AWS account must have IAM permissions to launch AWS CloudFormation templates that create IAM roles.
+
 
 ### Deployment
 
@@ -120,6 +110,9 @@ Follow the instructions to:
 * set up [Worker Nodes](docs/workers-setup.md)
 * set up [Blender and submit a job](docs/blender.md)
 
+## Local Development
+See [Local Development](LOCAL_DEVELOPMENT.md) guide to get a copy of the project up and running on your local machine for development and testing purposes.
+
 ## Running the tests
 
 The solution has been tested using [taskcat](https://github.com/aws-quickstart/taskcat) the tool that tests AWS CloudFormation templates.
@@ -136,7 +129,7 @@ From within project root directory run:
 taskat test run
 ```
 
-You can modify the taskcat configuration file with your own tests here [.taskcat.yml](.taskcat.yml)
+You can modify the `taskcat` configuration file with your own tests here [.taskcat.yml](.taskcat.yml)
 
 ## Clean up
 
