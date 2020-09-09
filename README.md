@@ -29,8 +29,8 @@ An overview of the architecture:
 ## Getting Started
 
 ### Prerequisites
-To deploy the application you will require an AWS account. If you don’t already have an AWS account, create one at <https://aws.amazon.com> by following the on-screen instructions. Your access to the AWS account must have IAM permissions to launch AWS CloudFormation templates that create IAM roles.
-
+1. To deploy the application you will require an AWS account. If you don’t already have an AWS account, create one at <https://aws.amazon.com> by following the on-screen instructions. Your access to the AWS account must have IAM permissions to launch AWS CloudFormation templates that create IAM roles.
+2. If deploying an [AWS Client VPN](https://docs.aws.amazon.com/vpn/latest/clientvpn-user/client-vpn-user-what-is.html) endpoint. You must generate a server/client certificate and upload those certificates to [AWS Certificate Manager](https://docs.aws.amazon.com/acm/latest/userguide/acm-overview.html). Click [here](https://docs.aws.amazon.com/vpn/latest/clientvpn-admin/authentication-authorization.html#mutual) to see instructions on how to create server/client certs.
 
 ### Deployment
 
@@ -45,13 +45,13 @@ You are responsible for the cost of the AWS services used while running this sam
 
     |Region|Launch Template|
     |------|---------------|
-    |**US East (N. Virginia)** (us-east-1) | [![Launch Stack](docs/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=aws-digital-content-creation-render-environment&templateURL=https://s3.amazonaws.com/solution-builders-us-east-1/aws-digital-content-creation-render-environment/latest/root.template)|
-    |**US East (Ohio)** (us-east-2) | [![Launch Stack](docs/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-2#/stacks/new?stackName=aws-digital-content-creation-render-environment&templateURL=https://s3.amazonaws.com/solution-builders-us-east-2/aws-digital-content-creation-render-environment/latest/root.template)|
-    |**US West (Oregon)** (us-west-2) | [![Launch Stack](docs/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/new?stackName=aws-digital-content-creation-render-environment&templateURL=https://s3.amazonaws.com/solution-builders-us-west-2/aws-digital-content-creation-render-environment/latest/root.template)|
-    |**Asia Pacific (Tokyo)** (ap-northeast-1) | [![Launch Stack](docs/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-northeast-1#/stacks/new?stackName=aws-digital-content-creation-render-environment&templateURL=https://s3.amazonaws.com/solution-builders-ap-northeast-1/aws-digital-content-creation-render-environment/latest/root.template)|
-    |**Asia Pacific (Singapore)** (ap-southeast-1) | [![Launch Stack](docs/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-southeast-1#/stacks/new?stackName=aws-digital-content-creation-render-environment&templateURL=https://s3.amazonaws.com/solution-builders-ap-southeast-1/aws-digital-content-creation-render-environment/latest/root.template)|
-    |**EU (Frankfurt)** (eu-central-1) | [![Launch Stack](docs/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=eu-central-1#/stacks/new?stackName=aws-digital-content-creation-render-environment&templateURL=https://s3.amazonaws.com/solution-builders-eu-central-1/aws-digital-content-creation-render-environment/latest/root.template)|
-    |**EU (Ireland)** (eu-west-1) | [![Launch Stack](docs/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks/new?stackName=aws-digital-content-creation-render-environment&templateURL=https://s3.amazonaws.com/solution-builders-eu-west-1/aws-digital-content-creation-render-environment/latest/root.template)|
+    |**US East (N. Virginia)** (us-east-1) | [![Launch Stack](docs/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=aws-digital-content-creation-render-environment&templateURL=https://s3.amazonaws.com/solution-builders-us-east-1/aws-digital-content-creation-render-environment/latest/main.template)|
+    |**US East (Ohio)** (us-east-2) | [![Launch Stack](docs/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-2#/stacks/new?stackName=aws-digital-content-creation-render-environment&templateURL=https://s3.amazonaws.com/solution-builders-us-east-2/aws-digital-content-creation-render-environment/latest/main.template)|
+    |**US West (Oregon)** (us-west-2) | [![Launch Stack](docs/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/new?stackName=aws-digital-content-creation-render-environment&templateURL=https://s3.amazonaws.com/solution-builders-us-west-2/aws-digital-content-creation-render-environment/latest/main.template)|
+    |**Asia Pacific (Tokyo)** (ap-northeast-1) | [![Launch Stack](docs/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-northeast-1#/stacks/new?stackName=aws-digital-content-creation-render-environment&templateURL=https://s3.amazonaws.com/solution-builders-ap-northeast-1/aws-digital-content-creation-render-environment/latest/main.template)|
+    |**Asia Pacific (Singapore)** (ap-southeast-1) | [![Launch Stack](docs/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-southeast-1#/stacks/new?stackName=aws-digital-content-creation-render-environment&templateURL=https://s3.amazonaws.com/solution-builders-ap-southeast-1/aws-digital-content-creation-render-environment/latest/main.template)|
+    |**EU (Frankfurt)** (eu-central-1) | [![Launch Stack](docs/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=eu-central-1#/stacks/new?stackName=aws-digital-content-creation-render-environment&templateURL=https://s3.amazonaws.com/solution-builders-eu-central-1/aws-digital-content-creation-render-environment/latest/main.template)|
+    |**EU (Ireland)** (eu-west-1) | [![Launch Stack](docs/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks/new?stackName=aws-digital-content-creation-render-environment&templateURL=https://s3.amazonaws.com/solution-builders-eu-west-1/aws-digital-content-creation-render-environment/latest/main.template)|
 
 1. If prompted, login using your AWS account credentials.
 1. You should see a screen titled **Create Stack** at the **Specify template** step. The fields specifying the CloudFormation template are pre-populated. Click the **Next** button at the bottom of the page.
@@ -72,12 +72,15 @@ You are responsible for the cost of the AWS services used while running this sam
     |License server version | 1.1 | The version of License server. |
     |Deadline license key | 123456789012 | The Deadline license key. |
     |Workstation instance type | g4dn.xlarge | The EC2 instance type for the Deadline workstation. |
+    |Workstation EBS volume size| 100 | Volume size for the VFX Host, in GiB. |
+    |Workstation subnet placement | Public | Specify if VFX host should be placed in "Public" or "Private" subnet. |
+    |Workstation access CIDR| 10.0.0.0/16 | CIDR block of an on-premise IP address. Input your network's current public or private IP depending if the Workstation is being placed in a public or private subnet. |
+    |EC2 user password| `Requires input` | The **ec2-user** password for remote access to NICEDCV workstation server and to access Deadline Repository samba share. |
     |Render node instance type | c5.4xlarge,c4.4xlarge | The EC2 instance type for the Deadline Render node. |
     |Render node capacity | 2 | The number of instances in the Spot Fleet. |
     |ArtefactBucketName | aws-digital-content-creation-render-environment | The S3 bucket you created for your copy of Quick Start assets, if you decide to customize or extend the solution for your own use. |
-    |EC2UserPassword| `Requires input` | The **ec2-user** password for remote access to NICEDCV server and to access Deadline Repository samba share. |
     |Environment | DEV | The type of environment to tag your infrastructure with. You can specify DEV (development), TEST (test), or PROD (production). |
-    |OnPremIp| 0.0.0.0/0 | On-premises IP to unable access to workstation. |
+
 
 1. When completed, click **Next**.
 1. [Configure stack options](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-add-tags.html) if desired, then click **Next**.

@@ -40,7 +40,11 @@ deploy:
 	  	AvailabilityZones=$(AWS_REGION)a,$(AWS_REGION)b \
 	  	EC2UserPassword=$(EC2_USER_PASSWORD) \
 	  	RenderNodeTargetCapacity=$(RENDER_NODE_TARGET_CAPACITY) \
-	  	RenderNodeInstanceType=$(RENDER_NODE_INSTANCE_TYPE)
+	  	RenderNodeInstanceType=$(RENDER_NODE_INSTANCE_TYPE) \
+	  	WorkstationSubnetPlacement=$(WORKSTATION_SUBNET_PLACEMENT) \
+	  	CreateVPNEndpoint=$(CREATE_VPN_ENDPOINT)
+	  	ServerCertArn=$(SERVER_CERT_ARN) \
+	  	ClientCertificateArn=$(CLIENT_CERT_ARN)
 
 # virtualenv setup
 venv: venv/bin/activate
@@ -60,6 +64,6 @@ clean:
 
 delete:
 	@printf "\n--> Deleting %s stack...\n" $(STACK_NAME)
-	aws cloudformation delete-stack \
+	@aws cloudformation delete-stack \
             --stack-name $(STACK_NAME)
 	@printf "\n--> $(STACK_NAME) deletion has been submitted, check AWS CloudFormation Console for an update..."
