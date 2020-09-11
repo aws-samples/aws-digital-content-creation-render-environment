@@ -24,9 +24,13 @@ Furthermore, the solution comes with [Blender](https://www.blender.org/) install
 
 ### Architecture
 
-An overview of the architecture:
+**Workstation in Private Subnet**
 
-![architecture-png](docs/develop/aws-digital-content-creation-render-environment.png)
+![aws-dcc-vpn.png](docs/develop/aws-dcc-vpn.png)
+
+
+**Workstation in Public Subnet**
+![architecture-png](docs/develop/aws-dcc.png)
 
 ## Getting Started
 
@@ -75,7 +79,7 @@ You are responsible for the cost of the AWS services used while running this sam
     |Target Network CIDR for VPN Endpoint | 10.0.0.0/16 | If creating Client VPN endpoint in the solution, specify the IPv4 address range, in CIDR notation, of the network for which access is being authorized. |
     |Workstation instance type | g4dn.xlarge | The EC2 instance type for the Deadline workstation. |
     |Workstation EBS volume size| 100 | Volume size for the VFX Host, in GiB. |
-    |Workstation subnet placement | Private | Specify if VFX host should be placed in "Public" or "Private" subnet. |
+    |Workstation subnet placement | Private | Specify if workstation should be placed in "Public" or "Private" subnet. |
     |Workstation access CIDR| 10.0.0.0/16 | CIDR block of an on-premise IP address. Input your network's current public or private IP depending if the Workstation is being placed in a public or private subnet. |
     |EC2 user password| `Requires input` | The **ec2-user** password for remote access to NICEDCV workstation server and to access Deadline Repository samba share. |
     |Render scheduler instance type | m5.2xlarge | The EC2 instance type for the Deadline repository. |
@@ -105,7 +109,7 @@ You are responsible for the cost of the AWS services used while running this sam
 ### Login to Workstation and Start Deadline application
 
 #### Connect to Workstation deployed in Private Subnet
-To connect to workstation in Private Subnet you will need to set up your VPN client.
+To connect to workstation in Private Subnet you will need to set up VPN client.
 
 ##### Step 1: Download the Client VPN Endpoint Configuration File
 The configuration file includes the Client VPN endpoint and certificate information required to establish a VPN connection. You must provide this file to the clients who need to connect to the Client VPN endpoint to establish a VPN connection. The client uploads this file into their VPN client application.
@@ -119,7 +123,7 @@ The configuration file includes the Client VPN endpoint and certificate informat
    ```
 1. Download the Client VPN endpoint configuration file.
    ```
-   ENDPOINT_ID="paste the id form step one"
+   ENDPOINT_ID="paste the id from step one"
 
    aws ec2 export-client-vpn-client-configuration --client-vpn-endpoint-id ${ENDPOINT_ID} --output text > client-config.ovpn
    ```
