@@ -30,21 +30,21 @@ deploy:
 	  --output-template-file ./cfn/packaged.template \
 	  --region $(AWS_REGION)
 
-	@printf "\n--> Deploying %s template...\n" $(STACK_NAME)
-	@aws cloudformation deploy \
-	  --template-file ./cfn/packaged.template \
-	  --stack-name $(STACK_NAME) \
-	  --region $(AWS_REGION) \
-	  --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
-	  --parameter-overrides \
-	  	AvailabilityZones=$(AWS_REGION)a,$(AWS_REGION)b \
-	  	EC2UserPassword=$(EC2_USER_PASSWORD) \
-	  	RenderNodeTargetCapacity=$(RENDER_NODE_TARGET_CAPACITY) \
-	  	RenderNodeInstanceType=$(RENDER_NODE_INSTANCE_TYPE) \
-	  	WorkstationSubnetPlacement=$(WORKSTATION_SUBNET_PLACEMENT) \
-	  	CreateVPNEndpoint=$(CREATE_VPN_ENDPOINT)
-	  	ServerCertArn=$(SERVER_CERT_ARN) \
-	  	ClientCertificateArn=$(CLIENT_CERT_ARN)
+#	@printf "\n--> Deploying %s template...\n" $(STACK_NAME)
+#	@aws cloudformation deploy \
+#	  --template-file ./cfn/packaged.template \
+#	  --stack-name $(STACK_NAME) \
+#	  --region $(AWS_REGION) \
+#	  --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
+#	  --parameter-overrides \
+#	  	AvailabilityZones=$(AWS_REGION)a,$(AWS_REGION)b \
+#	  	EC2UserPassword=$(EC2_USER_PASSWORD) \
+#	  	RenderNodeTargetCapacity=$(RENDER_NODE_TARGET_CAPACITY) \
+#	  	RenderNodeInstanceType=$(RENDER_NODE_INSTANCE_TYPE) \
+#	  	WorkstationSubnetPlacement=$(WORKSTATION_SUBNET_PLACEMENT) \
+#	  	CreateVPNEndpoint=$(CREATE_VPN_ENDPOINT)
+#	  	ServerCertArn=$(SERVER_CERT_ARN) \
+#	  	ClientCertificateArn=$(CLIENT_CERT_ARN)
 
 # virtualenv setup
 venv: venv/bin/activate

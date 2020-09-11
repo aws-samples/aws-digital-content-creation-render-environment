@@ -7,7 +7,7 @@ Parameters:
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
 
-  ServerCertArn:
+  ServerCertificateArn:
     Description: Specify Server Cert Arn for VPN endpoint.
     Type: String
 
@@ -41,7 +41,7 @@ Resources:
       ConnectionLogOptions:
         Enabled: false
       Description: "Client VPN to connect to instances in Private Subnet 1"
-      ServerCertificateArn: !Ref ServerCertArn
+      ServerCertificateArn: !Ref ServerCertificateArn
       VpcId: !Ref VPC
       SecurityGroupIds:
         - !Ref VPNSecurityGroup
@@ -100,5 +100,6 @@ Outputs:
   VPNSecurityGroupID:
     Description: VPN Security Group ID
     Value: !GetAtt VPNSecurityGroup.GroupId
-    Export:
-      Name: !Sub "${AWS::StackName}-vpn-security-group-id"
+
+  ClientVpnEndpointID:
+    Value: !Ref ClientVpnEndpoint
