@@ -2,8 +2,11 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: Provides configuration for a Deadline workstation instance.
 
 Parameters:
-  PublicSubnet1:
+  SubnetID:
     Type: AWS::EC2::Subnet::Id
+
+  WorkstationSubnetPlacement:
+    Type: String
 
   WorkstationSecurityGroup:
     Type: AWS::EC2::SecurityGroup::Id
@@ -13,6 +16,9 @@ Parameters:
 
   InstanceAMI:
     Type: AWS::EC2::Image::Id
+
+  WorkstationEBSVolumeSize:
+    Type: Number
 
   Environment:
     Type: String
@@ -38,6 +44,10 @@ Parameters:
 
   EfsFileSystem:
     Type: String
+
+Conditions:
+  UsePublicSubnet:
+    !Equals [!Ref WorkstationSubnetPlacement, Public]
 
 Resources:
   WorkstationInstance:
@@ -204,7 +214,7 @@ Resources:
       BlockDeviceMappings:
         - DeviceName: /dev/xvdh
           Ebs:
-            VolumeSize: 30
+            VolumeSize: !Ref WorkstationEBSVolumeSize
             VolumeType: gp2
             Encrypted: true
             DeleteOnTermination: true
@@ -213,7 +223,7 @@ Resources:
       InstanceType: !Ref InstanceType
       SecurityGroupIds:
         - !Ref WorkstationSecurityGroup
-      SubnetId: !Ref PublicSubnet1
+      SubnetId: !Ref SubnetID
       Tags:
         - Key: Name
           Value: deadline-workstation
@@ -251,5 +261,5 @@ Outputs:
   DeadlineVersion:
     Value: !Ref AppVersion
 
-  WorkstationPublicIP:
-    Value: !Join ['', [ 'https://', !GetAtt WorkstationInstance.PublicIp, ':8443'] ]
+  WorkstationIP:
+    Value: !Join ['', ['https://', !If [UsePublicSubnet, !GetAtt WorkstationInstance.PublicIp, !GetAtt WorkstationInstance.PrivateIp], ':8443']]

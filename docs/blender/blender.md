@@ -20,17 +20,17 @@ This will involve using the workstation to set up a shot to do a test render.
     * Click on **Add-ons** in the left panel
     * Click **Install...**
 
-      ![install-addon.png](./install-addon.png)
+      ![install-addon.png](install-addon.png)
 
     * Navigate to **/data/DeadlineRepository/submission/Blender/Client/**
     * Choose **DeadlineBlenderClient.py**
     * Click **Install Add-on**
 
-      ![blender-client.png](./blender-client.png)
+      ![blender-client.png](blender-client.png)
 
     * Click the checkbox next to **Render: Submit Blender to Deadline** add-on and close the Preferences window
 
-      ![addon-checkbox.png](./addon-checkbox.png)
+      ![addon-checkbox.png](addon-checkbox.png)
 
 ## Test the Blender set up
 
@@ -39,16 +39,16 @@ This will involve using the workstation to set up a shot to do a test render.
     * In the **Properties** Panel on the right, click on **Render Properties** (the icon looks like an old-timey television)
     * For **Render Engine** choose **Cycles**
 
-      ![blender-scene.png](./blender-scene.png)
+      ![blender-scene.png](blender-scene.png)
 
     * Click on **Output Properties** (the icon looks like an ink-jet printer)
     * Under **Output** change the value to **//####.png**
 
-      ![blender-output.png](./blender-output.png)
+      ![blender-output.png](blender-output.png)
 
     * Now save the file with `Shift Ctrl S` as `test.blend` in `/mnt/efs/test_project/`
 
-      ![blender-file.png](./blender-file.png)
+      ![blender-file.png](blender-file.png)
 
 1. Submit your render
     * Choose **Render → Submit to Deadline**
@@ -56,13 +56,13 @@ This will involve using the workstation to set up a shot to do a test render.
     * Set the **Frame List** to **1-10**
     * Make sure the **Blender File** and **Output File** is set properly
 
-      ![blender-job.png](./blender-job.png)
+      ![blender-job.png](blender-job.png)
 
     * Click **Submit** and **Close** the window
 
 1. Go back to Deadline monitor application. You should see your render going in the **Deadline Monitor**
 
-   ![deadline-job.png](./deadline-job.png)
+   ![deadline-job.png](deadline-job.png)
 
 ## Render something fancy
 
@@ -76,16 +76,16 @@ Now that our rendering farm is set up, let's render something cool. Blender prov
 1. Change the **Frame List**to **1-2**
 1. Make sure the **Blender File** and **Output File** are set properly
 
-   ![bmw-job-submit.png](./bmw-job-submit.png)
+   ![bmw-job-submit.png](bmw-job-submit.png)
 
 1. Click **Submit** and **Close** the window
 1. Go back to Deadline monitor application. You should see your render going in the **Deadline Monitor**
 1. Once the job is finished, **right click** on `Task ID 01 | Frame 2` to view the finished outcome of the render job
 
-   ![bmw-job.png](./bmw-job.png)
+   ![bmw-job.png](bmw-job.png)
 
 1. It will take about 4 minutes for the job to finish. Below is the outcome of the popular BMW demo by Mike Pan rendered.
 
-   ![bmw-demo.png](./bmw-demo.png)
+   ![bmw-demo.png](bmw-demo.png)
 
- > Congratulations, you have successfully sent a job to render nodes. You can now go back to the main [README](../README.md).
+ > Congratulations, you have successfully sent a job to render nodes. You can now go back to the main [README](../../README.md).

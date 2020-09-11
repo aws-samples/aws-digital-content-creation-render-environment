@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: Provides configuration for a Deadline license server instance.
 
 Parameters:
-  PublicSubnet1:
+  PrivateSubnet1:
     Type: AWS::EC2::Subnet::Id
 
   LicenseServerSecurityGroup:
@@ -119,7 +119,7 @@ Resources:
       InstanceType: !Ref InstanceType
       SecurityGroupIds:
         - !Ref LicenseServerSecurityGroup
-      SubnetId: !Ref PublicSubnet1
+      SubnetId: !Ref PrivateSubnet1
       Tags:
         - Key: Name
           Value: deadline-license-server

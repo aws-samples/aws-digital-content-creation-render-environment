@@ -10,9 +10,12 @@ Furthermore, the solution comes with [Blender](https://www.blender.org/) install
 
 - [Architecture](#architecture)
 - [Getting Started](#getting-started)
-    - [Prerequisites](#prerequisites)
-    - [Deployment](#deployment)
-    - [Login to Workstation and Start Deadline application](#login-to-workstation-and-start-deadline-application)
+  - [Prerequisites](#prerequisites)
+  - [Deployment](#deployment)
+  - [Login to Workstation and Start Deadline application](#login-to-workstation-and-start-deadline-application)
+    - [Connect to Workstation deployed in Private Subnet](#connect-to-workstation-deployed-in-private-subnet)
+    - [Connect to Workstation deployed in Public Subnet](#connect-to-workstation-deployed-in-public-subnet)
+
 - [Render Something to Test the Setup](#render-something-to-test-the-setup)
 - [Local Development](#local-development)
 - [Running the tests](#running-the-tests)
@@ -23,14 +26,13 @@ Furthermore, the solution comes with [Blender](https://www.blender.org/) install
 
 An overview of the architecture:
 
-![architecture-png](./docs/aws-digital-content-creation-render-environment.png)
-
+![architecture-png](docs/develop/aws-digital-content-creation-render-environment.png)
 
 ## Getting Started
 
 ### Prerequisites
-To deploy the application you will require an AWS account. If you don’t already have an AWS account, create one at <https://aws.amazon.com> by following the on-screen instructions. Your access to the AWS account must have IAM permissions to launch AWS CloudFormation templates that create IAM roles.
-
+1. To deploy the application you will require an AWS account. If you don’t already have an AWS account, create one at <https://aws.amazon.com> by following the on-screen instructions. Your access to the AWS account must have IAM permissions to launch AWS CloudFormation templates that create IAM roles.
+1. If deploying an [AWS Client VPN](https://docs.aws.amazon.com/vpn/latest/clientvpn-user/client-vpn-user-what-is.html) endpoint. You must generate a server/client certificate and upload those certificates to [AWS Certificate Manager](https://docs.aws.amazon.com/acm/latest/userguide/acm-overview.html). Click [here](https://docs.aws.amazon.com/vpn/latest/clientvpn-admin/client-authentication.html#mutual) and follow the instructions in Mutual authentication to create  client and server certificates.
 
 ### Deployment
 
@@ -45,13 +47,13 @@ You are responsible for the cost of the AWS services used while running this sam
 
     |Region|Launch Template|
     |------|---------------|
-    |**US East (N. Virginia)** (us-east-1) | [![Launch Stack](docs/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=aws-digital-content-creation-render-environment&templateURL=https://s3.amazonaws.com/solution-builders-us-east-1/aws-digital-content-creation-render-environment/latest/root.template)|
-    |**US East (Ohio)** (us-east-2) | [![Launch Stack](docs/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-2#/stacks/new?stackName=aws-digital-content-creation-render-environment&templateURL=https://s3.amazonaws.com/solution-builders-us-east-2/aws-digital-content-creation-render-environment/latest/root.template)|
-    |**US West (Oregon)** (us-west-2) | [![Launch Stack](docs/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/new?stackName=aws-digital-content-creation-render-environment&templateURL=https://s3.amazonaws.com/solution-builders-us-west-2/aws-digital-content-creation-render-environment/latest/root.template)|
-    |**Asia Pacific (Tokyo)** (ap-northeast-1) | [![Launch Stack](docs/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-northeast-1#/stacks/new?stackName=aws-digital-content-creation-render-environment&templateURL=https://s3.amazonaws.com/solution-builders-ap-northeast-1/aws-digital-content-creation-render-environment/latest/root.template)|
-    |**Asia Pacific (Singapore)** (ap-southeast-1) | [![Launch Stack](docs/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-southeast-1#/stacks/new?stackName=aws-digital-content-creation-render-environment&templateURL=https://s3.amazonaws.com/solution-builders-ap-southeast-1/aws-digital-content-creation-render-environment/latest/root.template)|
-    |**EU (Frankfurt)** (eu-central-1) | [![Launch Stack](docs/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=eu-central-1#/stacks/new?stackName=aws-digital-content-creation-render-environment&templateURL=https://s3.amazonaws.com/solution-builders-eu-central-1/aws-digital-content-creation-render-environment/latest/root.template)|
-    |**EU (Ireland)** (eu-west-1) | [![Launch Stack](docs/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks/new?stackName=aws-digital-content-creation-render-environment&templateURL=https://s3.amazonaws.com/solution-builders-eu-west-1/aws-digital-content-creation-render-environment/latest/root.template)|
+    |**US East (N. Virginia)** (us-east-1) | [![Launch Stack](docs/develop/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=aws-digital-content-creation-render-environment&templateURL=https://s3.amazonaws.com/solution-builders-us-east-1/aws-digital-content-creation-render-environment/latest/main.template)|
+    |**US East (Ohio)** (us-east-2) | [![Launch Stack](docs/develop/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-2#/stacks/new?stackName=aws-digital-content-creation-render-environment&templateURL=https://s3.amazonaws.com/solution-builders-us-east-2/aws-digital-content-creation-render-environment/latest/main.template)|
+    |**US West (Oregon)** (us-west-2) | [![Launch Stack](docs/develop/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/new?stackName=aws-digital-content-creation-render-environment&templateURL=https://s3.amazonaws.com/solution-builders-us-west-2/aws-digital-content-creation-render-environment/latest/main.template)|
+    |**Asia Pacific (Tokyo)** (ap-northeast-1) | [![Launch Stack](docs/develop/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-northeast-1#/stacks/new?stackName=aws-digital-content-creation-render-environment&templateURL=https://s3.amazonaws.com/solution-builders-ap-northeast-1/aws-digital-content-creation-render-environment/latest/main.template)|
+    |**Asia Pacific (Singapore)** (ap-southeast-1) | [![Launch Stack](docs/develop/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-southeast-1#/stacks/new?stackName=aws-digital-content-creation-render-environment&templateURL=https://s3.amazonaws.com/solution-builders-ap-southeast-1/aws-digital-content-creation-render-environment/latest/main.template)|
+    |**EU (Frankfurt)** (eu-central-1) | [![Launch Stack](docs/develop/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=eu-central-1#/stacks/new?stackName=aws-digital-content-creation-render-environment&templateURL=https://s3.amazonaws.com/solution-builders-eu-central-1/aws-digital-content-creation-render-environment/latest/main.template)|
+    |**EU (Ireland)** (eu-west-1) | [![Launch Stack](docs/develop/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks/new?stackName=aws-digital-content-creation-render-environment&templateURL=https://s3.amazonaws.com/solution-builders-eu-west-1/aws-digital-content-creation-render-environment/latest/main.template)|
 
 1. If prompted, login using your AWS account credentials.
 1. You should see a screen titled **Create Stack** at the **Specify template** step. The fields specifying the CloudFormation template are pre-populated. Click the **Next** button at the bottom of the page.
@@ -61,23 +63,30 @@ You are responsible for the cost of the AWS services used while running this sam
     |---------------|-------|-----------|
     |Availability Zones | `Requires input` | The list of Availability Zones to use for the subnets in the VPC. Select **two** Availability Zones from your list. |
     |VPC name | dcc-vpc | The name of the VPC. |
-    |VPC CIDR | 10.0.0.0/16 | The CIDR block for the production VPC. |
-    |Public Subnet 1 CIDR | 10.0.0.0/24 | The CIDR block for the public subnet located in Availability Zone 1 of the VPC. |
-    |Public Subnet 2 CIDR | 10.0.1.0/24 | The CIDR block for the public subnet located in Availability Zone 2 of the VPC. |
-    |Private Subnet 1 CIDR | 10.0.2.0/24 | The CIDR block for the private subnet located in Availability Zone 1 of the VPC. |
-    |Private Subnet 2 CIDR | 10.0.3.0/24 | The CIDR block for the private subnet located in Availability Zone 2 of the VPC. |
+    |VPC CIDR | 10.0.0.0/16 | The CIDR block for the VPC. |
+    |Public Subnet 1 CIDR | 10.0.0.0/24 | The CIDR block for the Public Subnet located in Availability Zone 1 of the VPC. |
+    |Public Subnet 2 CIDR | 10.0.1.0/24 | The CIDR block for the Public Subnet located in Availability Zone 2 of the VPC. |
+    |Private Subnet 1 CIDR | 10.0.2.0/24 | The CIDR block for the Private Subnet located in Availability Zone 1 of the VPC. |
+    |Private Subnet 2 CIDR | 10.0.3.0/24 | The CIDR block for the Private Subnet located in Availability Zone 2 of the VPC. |
+    |Create VPN Endpoint | true | Should the CloudFormation create a Client VPN Endpoint. It is recommended to place Workstation to Private subnet, if set to 'true'. (Specify 'true' or 'false') |
+    |Client CIDR for VPN Endpoint | 10.50.0.0/20 | If creating Client VPN endpoint in the solution, specify the IPv4 address range. It should be in CIDR notation from which to assign client IP addresses. The address range cannot overlap with the local CIDR of the VPC in which the associated subnet is located, or the routes that you add manually. |
+    |ACM Server Certificate ARN | N/A | Required if Create Client VPN endpoint is set to `true`. |
+    |ACM Client Certificate ARN | N/A | Required if Create Client VPN endpoint is set to `true`. |
+    |Target Network CIDR for VPN Endpoint | 10.0.0.0/16 | If creating Client VPN endpoint in the solution, specify the IPv4 address range, in CIDR notation, of the network for which access is being authorized. |
+    |Workstation instance type | g4dn.xlarge | The EC2 instance type for the Deadline workstation. |
+    |Workstation EBS volume size| 100 | Volume size for the VFX Host, in GiB. |
+    |Workstation subnet placement | Private | Specify if VFX host should be placed in "Public" or "Private" subnet. |
+    |Workstation access CIDR| 10.0.0.0/16 | CIDR block of an on-premise IP address. Input your network's current public or private IP depending if the Workstation is being placed in a public or private subnet. |
+    |EC2 user password| `Requires input` | The **ec2-user** password for remote access to NICEDCV workstation server and to access Deadline Repository samba share. |
     |Render scheduler instance type | m5.2xlarge | The EC2 instance type for the Deadline repository. |
     |Deadline application version | 10.1.3.6 | The version of Deadline application. |
-    |License server instance type| m5.large | The EC2 instance type for the License server. |
+    |License server instance type| m5.large | The EC2 instance type for the Deadline License server. |
     |License server version | 1.1 | The version of License server. |
-    |Deadline license key | 123456789012 | The Deadline license key. |
-    |Workstation instance type | g4dn.xlarge | The EC2 instance type for the Deadline workstation. |
-    |Render node instance type | c5.4xlarge,c4.4xlarge | The EC2 instance type for the Deadline Render node. |
+    |Deadline license key | 123456789012 | If you have license key, add it here. |
+    |Render node instance type | c5.4xlarge,c4.4xlarge | The EC2 instance type for the Deadline Render nodes |
     |Render node capacity | 2 | The number of instances in the Spot Fleet. |
-    |ArtefactBucketName | aws-digital-content-creation-render-environment | The S3 bucket you created for your copy of Quick Start assets, if you decide to customize or extend the solution for your own use. |
-    |EC2UserPassword| `Requires input` | The **ec2-user** password for remote access to NICEDCV server and to access Deadline Repository samba share. |
     |Environment | DEV | The type of environment to tag your infrastructure with. You can specify DEV (development), TEST (test), or PROD (production). |
-    |OnPremIp| 0.0.0.0/0 | On-premises IP to unable access to workstation. |
+    |ArtefactBucketName | aws-digital-content-creation-render-environment | S3 bucket name for the application assets. |
 
 1. When completed, click **Next**.
 1. [Configure stack options](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-add-tags.html) if desired, then click **Next**.
@@ -95,9 +104,65 @@ You are responsible for the cost of the AWS services used while running this sam
 
 ### Login to Workstation and Start Deadline application
 
-1. Note the **WorkstationPublicIP** displayed in the **Outputs** tab of the **root** stack (it is the one without word **NESTED**).
+#### Connect to Workstation deployed in Private Subnet
+To connect to workstation in Private Subnet you will need to set up your VPN client.
+
+##### Step 1: Download the Client VPN Endpoint Configuration File
+The configuration file includes the Client VPN endpoint and certificate information required to establish a VPN connection. You must provide this file to the clients who need to connect to the Client VPN endpoint to establish a VPN connection. The client uploads this file into their VPN client application.
+
+**To download and prepare the Client VPN endpoint configuration file (AWS CLI)**
+
+1. Note the **ClientVpnEndpointID** displayed in the **Outputs** tab of the **root** stack (it is the one without word **NESTED**).
+1. Navigate to the folder with server and client certificates you have created as part of the [Prerequisites](#prerequisites) in step 2.
+   ```
+   cd ~/custom_folder/
+   ```
+1. Download the Client VPN endpoint configuration file.
+   ```
+   ENDPOINT_ID="paste the id form step one"
+
+   aws ec2 export-client-vpn-client-configuration --client-vpn-endpoint-id ${ENDPOINT_ID} --output text > client-config.ovpn
+   ```
+1. Append the client certificate and key to the Client VPN endpoint configuration file.
+   ```bash
+   cat >> client-config.ovpn
+   cert ~/custom_folder/client1.domain.tld.crt
+   key ~/custom_folder/client1.domain.tld.key
+
+   CTRL+C
+   ```
+1. Verify that you have all the files in `~/custom_folder/` directory.
+   ```
+   ls -l
+
+   ca.crt
+   client-config.ovpn
+   client1.domain.tld.crt
+   client1.domain.tld.key
+   server.crt
+   server.key
+   ```
+##### Step 2: Configure OpenVPN Client
+Now that we have VPN configuration file ready, the last step is to install VPN client on your machine. The following procedure shows how to establish a VPN connection using the `Tunnelblick` client application on a macOS computer.
+
+```bash
+brew search tunnelblick
+brew cask install tunnelblick
+```
+
+Once the client is installed, please follow the
+[AWS Connect to VPN documentation](https://docs.aws.amazon.com/vpn/latest/clientvpn-user/macos.html).
+
+##### Step 3: Connect to Deadline workstation instance
+1. Note the **WorkstationIP** displayed in the **Outputs** tab of the **root** stack (it is the one without word **NESTED**).
 1. On the web browser or in the [NICE DCV Client](https://download.nice-dcv.com/), paste the **WorkstationPublicIP** and log in to the workstation with **ec2-user** credentials.
-   ![nicedcv-login-png](./docs/nicedcv-login.png)
+   ![nicedcv-login-png](docs/develop/nicedcv-login.png)
+
+#### Connect to Workstation deployed in Public Subnet
+To connect to workstation in Public Subnet follow the steps below:
+
+1. Note the **WorkstationIP** displayed in the **Outputs** tab of the **root** stack (it is the one without word **NESTED**).
+1. On the web browser or in the [NICE DCV Client](https://download.nice-dcv.com/), paste the **WorkstationPublicIP** and log in to the workstation with **ec2-user** credentials.
 
 ## Render Something to Test the Setup
 
@@ -107,11 +172,11 @@ For this part, you will use [Blender](https://www.blender.org/) to render someth
 
 Follow the instructions to:
 
-* set up [Worker Nodes](docs/workers-setup.md)
-* set up [Blender and submit a job](docs/blender.md)
+* set up [Worker Nodes](docs/deadline/workers-setup.md)
+* set up [Blender and submit a job](docs/blender/blender.md)
 
 ## Local Development
-See [Local Development](LOCAL_DEVELOPMENT.md) guide to get a copy of the project up and running on your local machine for development and testing purposes.
+See [Local Development](docs/develop/LOCAL_DEVELOPMENT.md) guide to get a copy of the project up and running on your local machine for development and testing purposes.
 
 ## Running the tests
 
