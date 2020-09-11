@@ -78,7 +78,7 @@ You are responsible for the cost of the AWS services used while running this sam
     |ACM Client Certificate ARN | N/A | Required if Create Client VPN endpoint is set to `true`. |
     |Target Network CIDR for VPN Endpoint | 10.0.0.0/16 | If creating Client VPN endpoint in the solution, specify the IPv4 address range, in CIDR notation, of the network for which access is being authorized. |
     |Workstation instance type | g4dn.xlarge | The EC2 instance type for the Deadline workstation. |
-    |Workstation EBS volume size| 100 | Volume size for the VFX Host, in GiB. |
+    |Workstation EBS volume size| 100 | Volume size of workstation instance, in GiB. |
     |Workstation subnet placement | Private | Specify if workstation should be placed in "Public" or "Private" subnet. |
     |Workstation access CIDR| 10.0.0.0/16 | CIDR block of an on-premise IP address. Input your network's current public or private IP depending if the Workstation is being placed in a public or private subnet. |
     |EC2 user password| `Requires input` | The **ec2-user** password for remote access to NICEDCV workstation server and to access Deadline Repository samba share. |
