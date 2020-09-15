@@ -165,12 +165,10 @@ Parameters:
   ServerCertificateArn:
     Type: String
     Description: 'Required if Create Client VPN endpoint is set to `true`.'
-    Default: N/A
 
   ClientCertificateArn:
     Type: String
     Description: 'Required if Create Client VPN endpoint is set to `true`.'
-    Default: N/A
 
   TargetNetworkCidr:
     Type: String
