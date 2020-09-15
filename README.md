@@ -37,6 +37,7 @@ Furthermore, the solution comes with [Blender](https://www.blender.org/) install
 ### Prerequisites
 1. To deploy the application you will require an AWS account. If you don’t already have an AWS account, create one at <https://aws.amazon.com> by following the on-screen instructions. Your access to the AWS account must have IAM permissions to launch AWS CloudFormation templates that create IAM roles.
 1. If deploying an [AWS Client VPN](https://docs.aws.amazon.com/vpn/latest/clientvpn-user/client-vpn-user-what-is.html) endpoint. You must generate a server/client certificate and upload those certificates to [AWS Certificate Manager](https://docs.aws.amazon.com/acm/latest/userguide/acm-overview.html). Click [here](https://docs.aws.amazon.com/vpn/latest/clientvpn-admin/client-authentication.html#mutual) and follow the instructions in Mutual authentication to create  client and server certificates.
+1. Configuration to AWS Client VPN is done via [AWS CLI](https://aws.amazon.com/cli/). You need to [install](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html) and [configure](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) AWS CLI if you are planning to use Client VPN.
 
 ### Deployment
 
@@ -62,6 +63,7 @@ You are responsible for the cost of the AWS services used while running this sam
 1. If prompted, login using your AWS account credentials.
 1. You should see a screen titled **Create Stack** at the **Specify template** step. The fields specifying the CloudFormation template are pre-populated. Click the **Next** button at the bottom of the page.
 1. On the **Specify stack details** screen you may customize the following parameters of the CloudFormation stack:
+1. Stack name has been pre-populated with `aws-digital-content-creation-render-environment` name. You can change this and provide own stack name.
 
     |Parameter label|Default|Description|
     |---------------|-------|-----------|
@@ -72,10 +74,10 @@ You are responsible for the cost of the AWS services used while running this sam
     |Public Subnet 2 CIDR | 10.0.1.0/24 | The CIDR block for the Public Subnet located in Availability Zone 2 of the VPC. |
     |Private Subnet 1 CIDR | 10.0.2.0/24 | The CIDR block for the Private Subnet located in Availability Zone 1 of the VPC. |
     |Private Subnet 2 CIDR | 10.0.3.0/24 | The CIDR block for the Private Subnet located in Availability Zone 2 of the VPC. |
-    |Create VPN Endpoint | true | Should the CloudFormation create a Client VPN Endpoint. It is recommended to place Workstation to Private subnet, if set to 'true'. (Specify 'true' or 'false') |
+    |Create VPN Endpoint |true | Should the CloudFormation create a Client VPN Endpoint, it is recommended to place Workstation to Private subnet. If set to `true` you have to set up server and client certificates in AWS Certificate Manager, please follow instructions how to set this up [here](https://docs.aws.amazon.com/vpn/latest/clientvpn-admin/client-authentication.html#mutual). |
     |Client CIDR for VPN Endpoint | 10.50.0.0/20 | If creating Client VPN endpoint in the solution, specify the IPv4 address range. It should be in CIDR notation from which to assign client IP addresses. The address range cannot overlap with the local CIDR of the VPC in which the associated subnet is located, or the routes that you add manually. |
-    |ACM Server Certificate ARN | N/A | Required if Create Client VPN endpoint is set to `true`. |
-    |ACM Client Certificate ARN | N/A | Required if Create Client VPN endpoint is set to `true`. |
+    |ACM Server Certificate ARN | `Requires input` | If Client VPN is set to `true`, please provide your server certificate ARN. If Client VPN is set to `false`, set the parameter to `N/A`. |
+    |ACM Client Certificate ARN | `Requires input` | If Client VPN is set to `true`, please provide your client certificate ARN. If Client VPN is set to `false`, set the parameter to `N/A`. |
     |Target Network CIDR for VPN Endpoint | 10.0.0.0/16 | If creating Client VPN endpoint in the solution, specify the IPv4 address range, in CIDR notation, of the network for which access is being authorized. |
     |Workstation instance type | g4dn.xlarge | The EC2 instance type for the Deadline workstation. |
     |Workstation EBS volume size| 100 | Volume size of workstation instance, in GiB. |
