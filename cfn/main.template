@@ -3,7 +3,7 @@ Description: 'AWS Digital Content Creation Architecture - AWS ThinkBox Deadline.
 Transform: AWS::Serverless-2016-10-31
 
 Metadata:
-  Version: 1.4.2
+  Version: 1.4.3
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
@@ -239,7 +239,7 @@ Parameters:
     Description: 'The version of License server.'
     AllowedValues:
       - 1.1
-      - 11.13.1.4.2
+      - 11.13.1.4.3
     Default: 1.1
 
   DeadlineLicense:
