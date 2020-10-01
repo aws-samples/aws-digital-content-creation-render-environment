@@ -14,8 +14,9 @@ endif
 help:
 	@echo "init 		generate project for local development"
 	@echo "deploy 		deploy solution from source"
-	@echo "test			run pre-commit checks"
-	@echo "clean		delete virtualenv and installed libraries"
+	@echo "test 		run pre-commit checks"
+	@echo "clean 		delete virtualenv and installed libraries"
+	@echo "delete 		delete deployed stacks"
 
 # Install local dependencies and git hooks
 init: venv
