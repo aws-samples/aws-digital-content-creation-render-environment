@@ -92,7 +92,8 @@ You are responsible for the cost of the AWS services used while running this sam
     |Render node instance type | c5.4xlarge,c4.4xlarge | The EC2 instance type for the Deadline Render nodes |
     |Render node capacity | 2 | The number of instances in the Spot Fleet. |
     |Environment | DEV | The type of environment to tag your infrastructure with. You can specify DEV (development), TEST (test), or PROD (production). |
-    |ArtefactBucketName | aws-digital-content-creation-render-environment | S3 bucket name for the application assets. |
+    #TODO: be more specific
+    |ArtefactBucketName | aws-digital-content-creation-render-environment |  S3 bucket name for the application assets. |
 
 1. When completed, click **Next**.
 1. [Configure stack options](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-add-tags.html) if desired, then click **Next**.
@@ -125,9 +126,10 @@ The configuration file includes the Client VPN endpoint and certificate informat
    ```
 1. Download the Client VPN endpoint configuration file.
    ```
+   AWS_REGION="the region you deployed CloudFromtaion stack into, e.g. us-east-1"
    ENDPOINT_ID="paste the id from step one"
 
-   aws ec2 export-client-vpn-client-configuration --client-vpn-endpoint-id ${ENDPOINT_ID} --output text > client-config.ovpn
+   aws ec2 export-client-vpn-client-configuration --client-vpn-endpoint-id ${ENDPOINT_ID} --output text > client-config.ovpn --region ${AWS_REGION}
    ```
 1. Append the client certificate and key to the Client VPN endpoint configuration file.
    ```bash
