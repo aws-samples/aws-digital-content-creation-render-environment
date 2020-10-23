@@ -43,8 +43,9 @@ deploy:
 	  	RenderNodeTargetCapacity=$(RENDER_NODE_TARGET_CAPACITY) \
 	  	RenderNodeInstanceType=$(RENDER_NODE_INSTANCE_TYPE) \
 	  	WorkstationSubnetPlacement=$(WORKSTATION_SUBNET_PLACEMENT) \
-	  	CreateVPNEndpoint=$(CREATE_VPN_ENDPOINT)
-	  	ServerCertArn=$(SERVER_CERT_ARN) \
+	  	WorkstationAccessCIDR=$(WORKSTATION_ACCESS_CIDR) \
+	  	CreateVPNEndpoint=$(CREATE_VPN_ENDPOINT) \
+	  	ServerCertificateArn=$(SERVER_CERT_ARN) \
 	  	ClientCertificateArn=$(CLIENT_CERT_ARN)
 
 # virtualenv setup
