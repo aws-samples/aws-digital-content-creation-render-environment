@@ -3,7 +3,7 @@ Description: 'AWS Digital Content Creation Architecture - AWS ThinkBox Deadline.
 Transform: AWS::Serverless-2016-10-31
 
 Metadata:
-  Version: 1.4.5
+  Version: 1.4.6
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
@@ -209,7 +209,7 @@ Parameters:
     Type: String
     Description: "CIDR block of an on-premise IP address. Input your network's current public or private IP depending if the Workstation is being placed in a public or private subnet."
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
-    Default: 10.0.0.0/16
+    Default: 0.0.0.0/0
 
   EC2UserPassword:
     Type: String
