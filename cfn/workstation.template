@@ -209,7 +209,6 @@ Resources:
             02-install-gimp:
               command: amazon-linux-extras install -y gimp
               ignoreErrors: true
-
     Properties:
       BlockDeviceMappings:
         - DeviceName: /dev/xvdh
