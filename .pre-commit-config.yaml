@@ -4,25 +4,50 @@
 repos:
   # General
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v2.4.0
+    rev: v3.2.0
     hooks:
+      - id: check-case-conflict
+      - id: detect-private-key
       - id: trailing-whitespace
       - id: end-of-file-fixer
+      - id: mixed-line-ending
+        args:
+        - --fix=lf
       - id: check-yaml
+      - id: pretty-format-json
+        args:
+        - --autofix
+        - --indent=4
+        - --no-sort-keys
       - id: check-added-large-files
+      - id: check-merge-conflict
 
   # Secrets
   - repo: https://github.com/awslabs/git-secrets
-    rev: 5e28df337746db4f070c84f7069d365bfd0d72a8
+    rev: 80230afa8c8bdeac766a0fece36f95ffaa0be778
     hooks:
       - id: git-secrets
+        entry: git-secrets --scan
+        files: .
 
   # CloudFormation
   - repo: https://github.com/aws-cloudformation/cfn-python-lint
-    rev: v0.34.0
+    rev: v0.37.1
     hooks:
       - id: cfn-python-lint
         name: AWS CloudFormation Linter
-        files: \.(template|yaml)$
-        args: [--ignore-checks=W3002, --ignore-checks=W3011, --ignore-checks=W4002]
-        exclude: .pre-commit-config.yaml
+        files: \.(template)$
+        args: [--ignore-checks=W4002]
+
+  # Python
+  - repo: https://github.com/pycqa/pylint
+    rev: pylint-2.6.0
+    hooks:
+      - id: pylint
+        args:
+          - --errors-only
+
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.5.4
+    hooks:
+      - id: isort
