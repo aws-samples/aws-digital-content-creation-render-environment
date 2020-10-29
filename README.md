@@ -1,8 +1,10 @@
-# AWS Digital Content Creation Render Environment
+# AWS Digital Content Creation Render Environment (Linux Workstation)
 
 [![Build Status](https://travis-ci.org/aws-samples/aws-digital-content-creation-render-environment.svg?branch=master)](https://travis-ci.org/aws-samples/aws-digital-content-creation-render-environment)
 
 This solution deploys an AWS Cloud environment that helps media and entertainment organizations with burst rendering workloads. This CloudFormation template will deploy and setup [AWS ThinkBox Deadline](https://www.awsthinkbox.com/deadline) Database and Repository, Workstation, License Server, and Render nodes.
+
+The solution can deploy either Teradici PCoIP or NiceDCV Linux AMI workstation. Also there is an option to place workstation in a Private subnet and connect to it via AWS ClientVpn.
 
 Furthermore, the solution comes with [Blender](https://www.blender.org/) installation scripts, which is a popular open-source software for 3D modeling, animation, rendering and more...
 
@@ -74,14 +76,14 @@ You are responsible for the cost of the AWS services used while running this sam
     |Public Subnet 2 CIDR | 10.0.1.0/24 | The CIDR block for the Public Subnet located in Availability Zone 2 of the VPC. |
     |Private Subnet 1 CIDR | 10.0.2.0/24 | The CIDR block for the Private Subnet located in Availability Zone 1 of the VPC. |
     |Private Subnet 2 CIDR | 10.0.3.0/24 | The CIDR block for the Private Subnet located in Availability Zone 2 of the VPC. |
-    |Create VPN Endpoint |true | Should the CloudFormation create a Client VPN Endpoint, it is recommended to place Workstation to Private subnet. If set to `true` you have to set up server and client certificates in AWS Certificate Manager, please follow instructions how to set this up [here](https://docs.aws.amazon.com/vpn/latest/clientvpn-admin/client-authentication.html#mutual). |
+    |Create VPN Endpoint | false | Should the CloudFormation create a Client VPN Endpoint. If set to `true` ,workstation will be placed in Private Subnet and you have to set up server and client certificates in AWS Certificate Manager, please follow instructions how to set this up [here](https://docs.aws.amazon.com/vpn/latest/clientvpn-admin/client-authentication.html#mutual). |
     |Client CIDR for VPN Endpoint | 10.50.0.0/20 | If creating Client VPN endpoint in the solution, specify the IPv4 address range. It should be in CIDR notation from which to assign client IP addresses. The address range cannot overlap with the local CIDR of the VPC in which the associated subnet is located, or the routes that you add manually. |
-    |ACM Server Certificate ARN | `Requires input` | If Client VPN is set to `true`, please provide your server certificate ARN. If Client VPN is set to `false`, set the parameter to `N/A`. |
-    |ACM Client Certificate ARN | `Requires input` | If Client VPN is set to `true`, please provide your client certificate ARN. If Client VPN is set to `false`, set the parameter to `N/A`. |
+    |ACM Server Certificate ARN | N/A | If Client VPN is set to `true`, please provide your server certificate ARN, e.g. `arn:aws:acm:xxxxx` |
+    |ACM Client Certificate ARN | N/A | If Client VPN is set to `true`, please provide your client certificate ARN, e.g. `arn:aws:acm:xxxxx` |
     |Target Network CIDR for VPN Endpoint | 10.0.0.0/16 | If creating Client VPN endpoint in the solution, specify the IPv4 address range, in CIDR notation, of the network for which access is being authorized. |
     |Workstation instance type | g4dn.xlarge | The EC2 instance type for the Deadline workstation. |
+    |Workstation connection manager | teradici | Specify whether you want to run Teradici PCoIP or NiceDcv server to connect to the workstation. |
     |Workstation EBS volume size| 100 | Volume size of workstation instance, in GiB. |
-    |Workstation subnet placement | Private | Specify if workstation should be placed in "Public" or "Private" subnet. |
     |Workstation access CIDR| 10.0.0.0/16 | CIDR block of an on-premise IP address. Input your network's current public or private IP depending if the Workstation is being placed in a public or private subnet. |
     |EC2 user password| `Requires input` | The **ec2-user** password for remote access to NICEDCV workstation server and to access Deadline Repository samba share. |
     |Render scheduler instance type | m5.2xlarge | The EC2 instance type for the Deadline repository. |
@@ -91,9 +93,8 @@ You are responsible for the cost of the AWS services used while running this sam
     |Deadline license key | 123456789012 | If you have license key, add it here. |
     |Render node instance type | c5.4xlarge,c4.4xlarge | The EC2 instance type for the Deadline Render nodes |
     |Render node capacity | 2 | The number of instances in the Spot Fleet. |
+    |ArtefactBucketName | aws-digital-content-creation-render-environment | S3 bucket name for the application assets. Contains Deadline installation software.|
     |Environment | DEV | The type of environment to tag your infrastructure with. You can specify DEV (development), TEST (test), or PROD (production). |
-    #TODO: be more specific
-    |ArtefactBucketName | aws-digital-content-creation-render-environment |  S3 bucket name for the application assets. |
 
 1. When completed, click **Next**.
 1. [Configure stack options](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-add-tags.html) if desired, then click **Next**.
@@ -110,6 +111,21 @@ You are responsible for the cost of the AWS services used while running this sam
     > You can monitor the stack creation progress in the "Events" tab.
 
 ### Login to Workstation and Start Deadline application
+
+#### Connect to Workstation deployed in Public Subnet
+To connect to workstation in Public Subnet follow the steps below:
+
+1. Note the **WorkstationIP** displayed in the **Outputs** tab of the **root** stack (it is the one without word **NESTED**).
+1. Based on Connection manager selected:
+    1. *Teradici log in*:
+        1. Install the Teradici PCoIP client from [Teradici Software and Mobile Clients](https://docs.teradici.com/find/product/software-and-mobile-clients)
+        1. In PCoIP client for **Host Address or Code**, paste the **WorkstationPublicIP**
+        1. **UserName**: centos
+        1. **Password**: provide same password as used in *EC2 user password* parameter.
+    1. *NiceDcv log in*:
+        1. On the web browser or in the [NICE DCV Client](https://download.nice-dcv.com/), paste the **WorkstationIP** address
+        1. **UserName**: ec2-user
+        1. **Password**: provide same password as used in *EC2 user password* parameter.
 
 #### Connect to Workstation deployed in Private Subnet
 To connect to workstation in Private Subnet you will need to set up VPN client.
@@ -162,15 +178,7 @@ Once the client is installed, please follow the
 [AWS Connect to VPN documentation](https://docs.aws.amazon.com/vpn/latest/clientvpn-user/macos.html).
 
 ##### Step 3: Connect to Deadline workstation instance
-1. Note the **WorkstationIP** displayed in the **Outputs** tab of the **root** stack (it is the one without word **NESTED**).
-1. On the web browser or in the [NICE DCV Client](https://download.nice-dcv.com/), paste the **WorkstationPublicIP** and log in to the workstation with **ec2-user** credentials.
-   ![nicedcv-login-png](docs/develop/nicedcv-login.png)
-
-#### Connect to Workstation deployed in Public Subnet
-To connect to workstation in Public Subnet follow the steps below:
-
-1. Note the **WorkstationIP** displayed in the **Outputs** tab of the **root** stack (it is the one without word **NESTED**).
-1. On the web browser or in the [NICE DCV Client](https://download.nice-dcv.com/), paste the **WorkstationPublicIP** and log in to the workstation with **ec2-user** credentials.
+Follow the same steps as in Connect to [Workstation deployed in Public Subnet](#connect-to-workstation-deployed-in-public-subnet)
 
 ## Render Something to Test the Setup
 

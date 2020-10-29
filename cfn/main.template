@@ -89,7 +89,7 @@ Metadata:
       WorkstationInstanceType:
         default: Workstation instance type
       WorkstationConnectionManager:
-        deafult: Worksation connection manager
+        deafult: Workstation connection manager
       WorkstationEBSVolumeSize:
         default: Workstation EBS volume size
       EC2UserPassword:
@@ -179,14 +179,6 @@ Parameters:
     ConstraintDescription: 'CIDR block parameter must be in the form x.x.x.x/0-32'
     Default: 10.0.0.0/16
 
-  WorkstationConnectionManager:
-    Type: String
-    Description: 'Specify whether you want to run Teradici PCoIP or NiceDcv server to connect to the workstation.'
-    AllowedValues:
-      - teradici
-      - nicedcv
-    Default: teradici
-
   WorkstationInstanceType:
     Type: String
     Description: 'Artist workstation instance type.'
@@ -198,6 +190,14 @@ Parameters:
       - g4dn.12xlarge
       - g4dn.16xlarge
     Default: g4dn.xlarge
+
+  WorkstationConnectionManager:
+    Type: String
+    Description: 'Specify whether you want to run Teradici PCoIP or NiceDcv server to connect to the workstation.'
+    AllowedValues:
+      - teradici
+      - nicedcv
+    Default: teradici
 
   WorkstationEBSVolumeSize:
     Type: Number
