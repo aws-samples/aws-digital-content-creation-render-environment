@@ -5,7 +5,7 @@ Parameters:
   SubnetID:
     Type: AWS::EC2::Subnet::Id
 
-  WorkstationSubnetPlacement:
+  CreateVPNEndpoint:
     Type: String
 
   WorkstationSecurityGroup:
@@ -45,9 +45,15 @@ Parameters:
   EfsFileSystem:
     Type: String
 
+  WorkstationConnectionManager:
+    Type: String
+
 Conditions:
-  UsePublicSubnet:
-    !Equals [!Ref WorkstationSubnetPlacement, Public]
+  CreateClientVPN:
+    !Equals [!Ref CreateVPNEndpoint, true]
+
+  IsTeradici:
+    !Equals [ !Ref WorkstationConnectionManager, teradici ]
 
 Resources:
   WorkstationInstance:
@@ -61,12 +67,34 @@ Resources:
             - blender_download
             - app_install
             - post_install
+
         instance_prep:
-          packages:
-            yum:
-              system-lsb: []
-              cifs-utils: []
+          packages: !If
+            - IsTeradici
+            - yum:
+                redhat-lsb: []
+                cifs-utils: []
+            - yum:
+                system-lsb: []
+                cifs-utils: []
+
           files:
+            /sbin/ebsnvme-id: !If
+              - IsTeradici
+              - source: https://raw.githubusercontent.com/aws-samples/aws-digital-content-creation-render-environment/rezabekf/develop/scripts/ebsnvme-id
+                mode: '000755'
+                owner: root
+                group: root
+              - !Ref AWS::NoValue
+
+            /etc/udev/rules.d/70-ec2-nvme-devices.rules: !If
+              - IsTeradici
+              - source: https://raw.githubusercontent.com/aws-samples/aws-digital-content-creation-render-environment/rezabekf/develop/scripts/70-ec2-nvme-devices.rules
+                mode: '000755'
+                owner: root
+                group: root
+              - !Ref AWS::NoValue
+
             /opt/scripts/ec2-mount-ebs-volume.sh:
               content: |
                 #!/usr/bin/env bash
@@ -79,6 +107,7 @@ Resources:
               mode: '000755'
               owner: root
               group: root
+
             /opt/scripts/dns.sh:
               content: !Sub |
                 #!/usr/bin/env bash
@@ -93,23 +122,40 @@ Resources:
               mode: '000755'
               owner: root
               group: root
-            /etc/dcv/dcv.conf:
-              content: |
-                [session-management]
-                create-session = true
-                [session-management/automatic-console-session]
-                owner="ec2-user"
-                [display]
-                cuda-devices=['0']
-                [display/linux]
-                gl-displays=[':0.0']
-            /home/ec2-user/.smbcredentials:
-              content: !Sub |
-                username=ec2-user
-                password=${EC2UserPassword}
-              mode: '000400'
-              owner: ec2-user
-              group: ec2-user
+
+            /etc/dcv/dcv.conf: !If
+              - IsTeradici
+              - !Ref AWS::NoValue
+              - content: |
+                  [session-management]
+                  create-session = true
+                  [session-management/automatic-console-session]
+                  owner="ec2-user"
+                  [display]
+                  cuda-devices=['0']
+                  [display/linux]
+                  gl-displays=[':0.0']
+
+            /home/centos/.smbcredentials: !If
+              - IsTeradici
+              - content: !Sub |
+                  username=ec2-user
+                  password=${EC2UserPassword}
+                owner: centos
+                group: centos
+                mode: '000400'
+              - !Ref AWS::NoValue
+
+            /home/ec2-user/.smbcredentials: !If
+              - IsTeradici
+              - !Ref AWS::NoValue
+              - content: !Sub |
+                  username=ec2-user
+                  password=${EC2UserPassword}
+                owner: ec2-user
+                group: ec2-user
+                mode: '000400'
+
             /etc/cfn/cfn-hup.conf:
               content: !Sub |
                 [main]
@@ -119,6 +165,7 @@ Resources:
               mode: '000400'
               owner: root
               group: root
+
             /etc/cfn/hooks.d/cfn-auto-reloader.conf:
               content: !Sub |
                 [cfn-auto-reloader-hook]
@@ -129,7 +176,10 @@ Resources:
               mode: '000400'
               owner: root
               group: root
+
           commands:
+            00-reload-udev-rules:
+              command: udevadm control --reload-rules && udevadm trigger
             01-mount-ebs-volume:
               command: sh /opt/scripts/ec2-mount-ebs-volume.sh > /opt/scripts/ec2-mount-ebs-volume.log 2>&1
               test: test -x /opt/scripts/ec2-mount-ebs-volume.sh  # check if filename exists and is executable
@@ -145,26 +195,40 @@ Resources:
                 echo "${EfsFileSystem}:/ $EFS_DIRECTORY efs _netdev" >> /etc/fstab
                 mount -a -t efs defaults
               ignoreErrors: false
-            04-set-permission-on-efs:
-              command: chown -R ec2-user:root /mnt/efs
+            04-set-permission-on-efs: !If
+              - IsTeradici
+              - command: chown -R centos:root /mnt/efs
+              - command: chown -R ec2-user:root /mnt/efs
             05-mkdir_DeadlineRepository:
               command: mkdir -p /data/DeadlineRepository
-            06-mount_DeadlineRepository:
-              command: !Sub |
-                # create fstab entry for Deadline repository
-                echo "//${RepositoryInstancePrivateIp}/DeadlineRepository /data/DeadlineRepository cifs credentials=/home/ec2-user/.smbcredentials,uid=ec2-user 0 0" >> /etc/fstab
-                # mount the Deadline repository
-                mount -a
-              ignoreErrors: true
-            07-set_ec2_user_password:
-              command: !Sub echo ${EC2UserPassword} | tee - | passwd ec2-user
+            06-mount_DeadlineRepository: !If
+              - IsTeradici
+              - command: !Sub |
+                  # create fstab entry for Deadline repository
+                  echo "//${RepositoryInstancePrivateIp}/DeadlineRepository /data/DeadlineRepository cifs credentials=/home/centos/.smbcredentials 0 0" >> /etc/fstab
+                  # mount the Deadline repository
+                  mount -a
+                ignoreErrors: true
+              - command: !Sub |
+                  # create fstab entry for Deadline repository
+                  echo "//${RepositoryInstancePrivateIp}/DeadlineRepository /data/DeadlineRepository cifs credentials=/home/ec2-user/.smbcredentials 0 0" >> /etc/fstab
+                  # mount the Deadline repository
+                  mount -a
+                ignoreErrors: true
+            07-set_ec2_user_password: !If
+              - IsTeradici
+              - command: !Sub echo ${EC2UserPassword} | tee - | passwd centos
+              - command: !Sub echo ${EC2UserPassword} | tee - | passwd ec2-user
+
           services:
             sysvinit:
-              dcvserver:
-                enabled: true
-                ensureRunning: true
-                files:
-                  - /etc/dcv/dcv.conf
+              dcvserver: !If
+                - IsTeradici
+                - !Ref AWS::NoValue
+                - enabled: true
+                  ensureRunning: true
+                  files:
+                    - /etc/dcv/dcv.conf
               cfn-hup:
                 enabled: true
                 ensureRunning: true
@@ -177,9 +241,11 @@ Resources:
         artefacts_download:
           sources:
             /data/thinkbox: !Sub https://${ArtefactBucketName}.s3.amazonaws.com/Deadline-${AppVersion}-linux-installers.tar
+
         blender_download:
           sources:
             /usr/local: !Sub https://${ArtefactBucketName}.s3.amazonaws.com/Blender.zip
+
         app_install:
           commands:
             01-install_repository:
@@ -196,19 +262,20 @@ Resources:
                   --slavestartup false)
               ignoreErrors: true
         post_install:
-          packages:
-            amazon-linux-extras:
-              gimp: []
+          packages: !If
+            - IsTeradici
+            - yum:
+                gimp: []
+            - amazon-linux-extras:
+                gimp: []
           commands:
             01-install-google-chrome:
               command: |
-                cd /home/ec2-user
+                cd ~/
                 wget https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
                 yum localinstall -y google-chrome-stable_current_x86_64.rpm
               ignoreErrors: true
-            02-install-gimp:
-              command: amazon-linux-extras install -y gimp
-              ignoreErrors: true
+
     Properties:
       BlockDeviceMappings:
         - DeviceName: /dev/xvdh
@@ -228,26 +295,45 @@ Resources:
           Value: deadline-workstation
         - Key: Environment
           Value: !Ref Environment
-      UserData:
-        Fn::Base64:
-          !Sub |
-          #!/bin/bash -xe
+      UserData: !If
+        - IsTeradici
+        - Fn::Base64:
+            !Sub |
+            #!/bin/bash -xe
 
-          # Update aws-cfn-bootstrap to the latest
-          yum install -y aws-cfn-bootstrap
+            # add extras for yum repo
+            yum -y --enablerepo=extras install epel-release
 
-          # Install efs-utils
-          yum install -y amazon-efs-utils
+            # grab the latest cfn bootstrap and install it
+            sudo yum install -y https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.amzn1.noarch.rpm
+            sudo ln -s /usr/local/lib/python2.7/site-packages/cfnbootstrap /usr/lib/python2.7/site-packages/cfnbootstrap
 
-          # Install the EPEL release package for EL 7 and enable the EPEL repository
-          #yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-          #yum-config-manager --enable epel
-          #yum update -y --skip-broken
+            # install efs-utils
+            git clone https://github.com/aws/efs-utils
+            make rpm --directory ./efs-utils/
+            yum -y install ./efs-utils/build/amazon-efs-utils*.rpm
 
-          # Call cfn-init script to install files and packages
-          /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource WorkstationInstance --configsets dcc_install --region ${AWS::Region}
-          # Call cfn-signal script to send a signal with exit code
-          /opt/aws/bin/cfn-signal --exit-code $? --stack ${AWS::StackName} --resource WorkstationInstance --region ${AWS::Region}
+            # install amazon-ssm-agent
+            yum install -y https://s3.${AWS::Region}.amazonaws.com/amazon-ssm-${AWS::Region}/latest/linux_amd64/amazon-ssm-agent.rpm
+
+            # Call cfn-init script to install files and packages
+            /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource WorkstationInstance --configsets dcc_install --region ${AWS::Region}
+            # Call cfn-signal script to send a signal with exit code
+            /opt/aws/bin/cfn-signal --exit-code $? --stack ${AWS::StackName} --resource WorkstationInstance --region ${AWS::Region}
+        - Fn::Base64:
+            !Sub |
+            #!/bin/bash -xe
+
+            # Update aws-cfn-bootstrap to the latest
+            yum install -y aws-cfn-bootstrap
+
+            # Install efs-utils
+            yum install -y amazon-efs-utils
+
+            # Call cfn-init script to install files and packages
+            /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource WorkstationInstance --configsets dcc_install --region ${AWS::Region}
+            # Call cfn-signal script to send a signal with exit code
+            /opt/aws/bin/cfn-signal --exit-code $? --stack ${AWS::StackName} --resource WorkstationInstance --region ${AWS::Region}
     CreationPolicy:
       ResourceSignal:
         Count: 1
@@ -261,4 +347,4 @@ Outputs:
     Value: !Ref AppVersion
 
   WorkstationIP:
-    Value: !Join ['', ['https://', !If [UsePublicSubnet, !GetAtt WorkstationInstance.PublicIp, !GetAtt WorkstationInstance.PrivateIp], ':8443']]
+    Value: !If [CreateClientVPN, !GetAtt WorkstationInstance.PrivateIp, !GetAtt WorkstationInstance.PublicIp]
