@@ -68,7 +68,7 @@ test:
 	pre-commit run --all-files
 
 version:
-	bumpversion --dry-run --list cfn/main.template | grep current_version | sed s/'^.*='//
+	@bumpversion --dry-run --list cfn/main.template | grep current_version | sed s/'^.*='//
 
 # Cleanup local build
 clean:
