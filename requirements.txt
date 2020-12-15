@@ -1,5 +1,4 @@
 awscli
 bump2version
 pre-commit
-shyaml
 taskcat
