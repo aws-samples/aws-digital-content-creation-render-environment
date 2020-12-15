@@ -106,7 +106,11 @@ Resources:
             01-set_permissions:
               command: chmod 500 /data/thinkbox/ThinkboxLicenseServer*
             02-install_license_server:
-              command: ls /data/thinkbox | grep ThinkboxLicenseServer | (read data; /data/thinkbox/$data --mode text --licenseFile /data/thinkbox/license.lic)
+              command: |
+                ls /data/thinkbox | grep ThinkboxLicenseServer | \
+                  (read data; /data/thinkbox/$data \
+                  --mode text \
+                  --licenseFile /data/thinkbox/license.lic)
               ignoreErrors: true
     Properties:
       BlockDeviceMappings:
