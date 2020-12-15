@@ -5,8 +5,11 @@ SHELL := /bin/bash
 
 # Check for .custom.mk file if exists
 CUSTOM_FILE ?= .custom.mk
+CUSTOM_EXAMPLE ?= .custom.mk.example
 ifneq ("$(wildcard $(CUSTOM_FILE))","")
 	include $(CUSTOM_FILE)
+else ifneq ("$(wildcard $(CUSTOM_EXAMPLE))","")
+	include $(CUSTOM_EXAMPLE)
 else
 $(error File `.custom.mk` doesnt exist, please create one.)
 endif
@@ -22,15 +25,7 @@ help:
 init: venv
 	venv/bin/pre-commit install
 
-deploy:
-	@printf "\n--> Packaging and uploading templates to the %s S3 bucket ...\n" $(BUCKET_NAME)
-	@aws cloudformation package \
-	  --template-file ./cfn/main.template \
-	  --s3-bucket $(BUCKET_NAME) \
-	  --s3-prefix $(STACK_NAME) \
-	  --output-template-file ./cfn/packaged.template \
-	  --region $(AWS_REGION)
-
+deploy: package
 	@printf "\n--> Deploying %s template...\n" $(STACK_NAME)
 	@aws cloudformation deploy \
 	  --template-file ./cfn/packaged.template \
@@ -48,6 +43,19 @@ deploy:
 	  	ServerCertificateArn=$(SERVER_CERT_ARN) \
 	  	ClientCertificateArn=$(CLIENT_CERT_ARN)
 
+package:
+	@printf "\n--> Packaging and uploading templates to the %s S3 bucket ...\n" $(BUCKET_NAME)
+	@aws cloudformation package \
+  	--template-file ./cfn/main.template \
+  	--s3-bucket $(BUCKET_NAME) \
+  	--s3-prefix $(STACK_NAME) \
+  	--output-template-file ./cfn/packaged.template \
+  	--region $(AWS_REGION)
+
+# Package for cfn-publish CI
+cfn-publish-package:
+	zip -r packaged.zip -@ < ci/include.lst
+
 # virtualenv setup
 venv: venv/bin/activate
 
@@ -58,6 +66,9 @@ venv/bin/activate: requirements.txt
 
 test:
 	pre-commit run --all-files
+
+version:
+	bumpversion --dry-run --list cfn/main.template | grep current_version | sed s/'^.*='//
 
 # Cleanup local build
 clean:

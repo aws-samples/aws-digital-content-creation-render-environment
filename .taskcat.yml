@@ -1,6 +1,7 @@
 project:
   name: aws-digital-content-creation-render-environment
   owner: rezabekf@amazon.co.uk
+  package_lambda: false
   regions:
     - us-east-1
     - us-east-2
@@ -11,8 +12,6 @@ project:
     - eu-west-1
 tests:
   test-g4dn.xlarge:
-    auth:
-      default: builders
     template: ./cfn/packaged.template
     parameters:
       AvailabilityZones: $[taskcat_genaz_2]

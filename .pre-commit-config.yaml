@@ -12,14 +12,17 @@ repos:
       - id: end-of-file-fixer
       - id: mixed-line-ending
         args:
-        - --fix=lf
+          - --fix=lf
       - id: check-yaml
       - id: pretty-format-json
         args:
-        - --autofix
-        - --indent=4
-        - --no-sort-keys
+          - --autofix
+          - --indent=2
+          - --no-sort-keys
+        exclude: /package-lock\.json$
       - id: check-added-large-files
+        args:
+          - --maxkb=1000
       - id: check-merge-conflict
 
   # Secrets
@@ -28,7 +31,7 @@ repos:
     hooks:
       - id: git-secrets
         entry: git-secrets --scan
-        files: .
+        files: "."
 
   # CloudFormation
   - repo: https://github.com/aws-cloudformation/cfn-python-lint
@@ -37,7 +40,13 @@ repos:
       - id: cfn-python-lint
         name: AWS CloudFormation Linter
         files: \.(template)$
-        args: [--ignore-checks=W4002]
+        args: [--ignore-checks=E3002, --ignore-checks=W4002]
+
+#  - repo: https://github.com/aws-cloudformation/rain
+#    rev: 46a8f63541d848c8b57c129babdd124f324fdd78
+#    hooks:
+#      - id: cfn-format
+#        files: \.template$
 
   # Python
   - repo: https://github.com/pycqa/pylint
@@ -51,3 +60,8 @@ repos:
     rev: 5.5.4
     hooks:
       - id: isort
+
+  - repo: https://github.com/psf/black
+    rev: stable
+    hooks:
+      - id: black
