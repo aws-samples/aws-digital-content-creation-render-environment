@@ -1,4 +1,5 @@
-AWSTemplateFormatVersion: 2010-09-09
+AWSTemplateFormatVersion: "2010-09-09"
+
 Description: Provides configuration for a Deadline workstation instance.
 
 Parameters:
@@ -49,14 +50,16 @@ Parameters:
     Type: String
 
 Conditions:
-  CreateClientVPN:
-    !Equals [!Ref CreateVPNEndpoint, true]
+  CreateClientVPN: !Equals [!Ref CreateVPNEndpoint, true]
 
-  IsTeradici:
-    !Equals [ !Ref WorkstationConnectionManager, teradici ]
+  IsTeradici: !Equals [!Ref WorkstationConnectionManager, teradici]
 
 Resources:
   WorkstationInstance:
+    CreationPolicy:
+      ResourceSignal:
+        Count: 1
+        Timeout: PT25M
     Type: AWS::EC2::Instance
     Metadata:
       AWS::CloudFormation::Init:
@@ -67,7 +70,6 @@ Resources:
             - blender_download
             - app_install
             - post_install
-
         instance_prep:
           packages: !If
             - IsTeradici
@@ -77,24 +79,21 @@ Resources:
             - yum:
                 system-lsb: []
                 cifs-utils: []
-
           files:
             /sbin/ebsnvme-id: !If
               - IsTeradici
               - source: https://raw.githubusercontent.com/aws-samples/aws-digital-content-creation-render-environment/rezabekf/develop/scripts/ebsnvme-id
-                mode: '000755'
+                mode: "000755"
                 owner: root
                 group: root
               - !Ref AWS::NoValue
-
             /etc/udev/rules.d/70-ec2-nvme-devices.rules: !If
               - IsTeradici
               - source: https://raw.githubusercontent.com/aws-samples/aws-digital-content-creation-render-environment/rezabekf/develop/scripts/70-ec2-nvme-devices.rules
-                mode: '000755'
+                mode: "000755"
                 owner: root
                 group: root
               - !Ref AWS::NoValue
-
             /opt/scripts/ec2-mount-ebs-volume.sh:
               content: |
                 #!/usr/bin/env bash
@@ -104,10 +103,9 @@ Resources:
                   e2label $(readlink -f /dev/xvdh) dcc-data
                   grep -q ^LABEL=dcc-data /etc/fstab || echo 'LABEL=dcc-data /data ext4 defaults' >> /etc/fstab
                   grep -q "^$(readlink -f /dev/xvdh) /data " /proc/mounts || mount /data
-              mode: '000755'
+              mode: "000755"
               owner: root
               group: root
-
             /opt/scripts/dns.sh:
               content: !Sub |
                 #!/usr/bin/env bash
@@ -119,10 +117,9 @@ Resources:
                     sleep 30s
                   fi
                 done
-              mode: '000755'
+              mode: "000755"
               owner: root
               group: root
-
             /etc/dcv/dcv.conf: !If
               - IsTeradici
               - !Ref AWS::NoValue
@@ -135,7 +132,6 @@ Resources:
                   cuda-devices=['0']
                   [display/linux]
                   gl-displays=[':0.0']
-
             /home/centos/.smbcredentials: !If
               - IsTeradici
               - content: !Sub |
@@ -143,9 +139,8 @@ Resources:
                   password=${EC2UserPassword}
                 owner: centos
                 group: centos
-                mode: '000400'
+                mode: "000400"
               - !Ref AWS::NoValue
-
             /home/ec2-user/.smbcredentials: !If
               - IsTeradici
               - !Ref AWS::NoValue
@@ -154,18 +149,16 @@ Resources:
                   password=${EC2UserPassword}
                 owner: ec2-user
                 group: ec2-user
-                mode: '000400'
-
+                mode: "000400"
             /etc/cfn/cfn-hup.conf:
               content: !Sub |
                 [main]
                 stack=${AWS::StackId}
                 region=${AWS::Region}
                 interval=1
-              mode: '000400'
+              mode: "000400"
               owner: root
               group: root
-
             /etc/cfn/hooks.d/cfn-auto-reloader.conf:
               content: !Sub |
                 [cfn-auto-reloader-hook]
@@ -173,16 +166,15 @@ Resources:
                 path=Resources.WorkstationInstance.Metadata.AWS::CloudFormation::Init
                 action=/opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource WorkstationInstance --configsets dcc_install --region ${AWS::Region}
                 runas=root
-              mode: '000400'
+              mode: "000400"
               owner: root
               group: root
-
           commands:
             00-reload-udev-rules:
               command: udevadm control --reload-rules && udevadm trigger
             01-mount-ebs-volume:
               command: sh /opt/scripts/ec2-mount-ebs-volume.sh > /opt/scripts/ec2-mount-ebs-volume.log 2>&1
-              test: test -x /opt/scripts/ec2-mount-ebs-volume.sh  # check if filename exists and is executable
+              test: test -x /opt/scripts/ec2-mount-ebs-volume.sh # check if filename exists and is executable
               ignoreErrors: false
             02-wait_for_dns_propogation:
               command: sh /opt/scripts/dns.sh
@@ -219,7 +211,6 @@ Resources:
               - IsTeradici
               - command: !Sub echo ${EC2UserPassword} | tee - | passwd centos
               - command: !Sub echo ${EC2UserPassword} | tee - | passwd ec2-user
-
           services:
             sysvinit:
               dcvserver: !If
@@ -241,11 +232,9 @@ Resources:
         artefacts_download:
           sources:
             /data/thinkbox: !Sub https://${ArtefactBucketName}.s3.amazonaws.com/Deadline-${AppVersion}-linux-installers.tar
-
         blender_download:
           sources:
             /usr/local: !Sub https://${ArtefactBucketName}.s3.amazonaws.com/Blender.zip
-
         app_install:
           commands:
             01-install_repository:
@@ -275,7 +264,6 @@ Resources:
                 wget https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
                 yum localinstall -y google-chrome-stable_current_x86_64.rpm
               ignoreErrors: true
-
     Properties:
       BlockDeviceMappings:
         - DeviceName: /dev/xvdh
@@ -297,47 +285,36 @@ Resources:
           Value: !Ref Environment
       UserData: !If
         - IsTeradici
-        - Fn::Base64:
-            !Sub |
+        - !Base64
+          Fn::Sub: |
             #!/bin/bash -xe
-
+            yum -y update
             # add extras for yum repo
             yum -y --enablerepo=extras install epel-release
-
             # grab the latest cfn bootstrap and install it
             sudo yum install -y https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.amzn1.noarch.rpm
             sudo ln -s /usr/local/lib/python2.7/site-packages/cfnbootstrap /usr/lib/python2.7/site-packages/cfnbootstrap
-
             # install efs-utils
             git clone https://github.com/aws/efs-utils
             make rpm --directory ./efs-utils/
             yum -y install ./efs-utils/build/amazon-efs-utils*.rpm
-
             # install amazon-ssm-agent
             yum install -y https://s3.${AWS::Region}.amazonaws.com/amazon-ssm-${AWS::Region}/latest/linux_amd64/amazon-ssm-agent.rpm
-
             # Call cfn-init script to install files and packages
             /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource WorkstationInstance --configsets dcc_install --region ${AWS::Region}
             # Call cfn-signal script to send a signal with exit code
             /opt/aws/bin/cfn-signal --exit-code $? --stack ${AWS::StackName} --resource WorkstationInstance --region ${AWS::Region}
-        - Fn::Base64:
-            !Sub |
+        - !Base64
+          Fn::Sub: |
             #!/bin/bash -xe
-
             # Update aws-cfn-bootstrap to the latest
             yum install -y aws-cfn-bootstrap
-
             # Install efs-utils
             yum install -y amazon-efs-utils
-
             # Call cfn-init script to install files and packages
             /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource WorkstationInstance --configsets dcc_install --region ${AWS::Region}
             # Call cfn-signal script to send a signal with exit code
             /opt/aws/bin/cfn-signal --exit-code $? --stack ${AWS::StackName} --resource WorkstationInstance --region ${AWS::Region}
-    CreationPolicy:
-      ResourceSignal:
-        Count: 1
-        Timeout: "PT15M"
 
 Outputs:
   WorkstationInstancePrivateIp:

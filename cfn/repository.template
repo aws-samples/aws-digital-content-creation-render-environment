@@ -1,4 +1,5 @@
-AWSTemplateFormatVersion: 2010-09-09
+AWSTemplateFormatVersion: "2010-09-09"
+
 Description: Provides configuration for a Deadline database and repository instance.
 
 Parameters:
@@ -35,6 +36,10 @@ Parameters:
 
 Resources:
   RepositoryInstance:
+    CreationPolicy:
+      ResourceSignal:
+        Count: 1
+        Timeout: PT15M
     Type: AWS::EC2::Instance
     Metadata:
       AWS::CloudFormation::Init:
@@ -58,7 +63,7 @@ Resources:
                   e2label $(readlink -f /dev/xvdh) dcc-data
                   grep -q ^LABEL=dcc-data /etc/fstab || echo 'LABEL=dcc-data /data ext4 defaults' >> /etc/fstab
                   grep -q "^$(readlink -f /dev/xvdh) /data " /proc/mounts || mount /data
-              mode: '000755'
+              mode: "000755"
               owner: root
               group: root
             /opt/scripts/dns.sh:
@@ -72,7 +77,7 @@ Resources:
                     sleep 30s
                   fi
                 done
-              mode: '000755'
+              mode: "000755"
               owner: root
               group: root
             /etc/samba/smb.conf:
@@ -97,14 +102,14 @@ Resources:
                   force create mode = 0700
                   force directory mode = 0700
                   unix extensions = No
-              mode: '000755'
+              mode: "000755"
             /etc/cfn/cfn-hup.conf:
               content: !Sub |
                 [main]
                 stack=${AWS::StackId}
                 region=${AWS::Region}
                 interval=1
-              mode: '000400'
+              mode: "000400"
               owner: root
               group: root
             /etc/cfn/hooks.d/cfn-auto-reloader.conf:
@@ -114,13 +119,13 @@ Resources:
                 path=Resources.RepositoryInstance.Metadata.AWS::CloudFormation::Init
                 action=/opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource RepositoryInstance --configsets dcc_install --region ${AWS::Region}
                 runas=root
-              mode: '000400'
+              mode: "000400"
               owner: root
               group: root
           commands:
             01-mount-ebs-volume:
               command: sh /opt/scripts/ec2-mount-ebs-volume.sh > /opt/scripts/ec2-mount-ebs-volume.log 2>&1
-              test: test -x /opt/scripts/ec2-mount-ebs-volume.sh  # check if filename exists and is executable
+              test: test -x /opt/scripts/ec2-mount-ebs-volume.sh # check if filename exists and is executable
               ignoreErrors: false
             02-wait_for_dns_propogation:
               command: sh /opt/scripts/dns.sh
@@ -157,13 +162,7 @@ Resources:
         app_install:
           commands:
             01-install_repository:
-              command: ls /data/thinkbox | grep DeadlineRepository |
-                (read data; /data/thinkbox/$data
-                --mode unattended
-                --prefix "/data/thinkbox/DeadlineRepository10"
-                --installmongodb true
-                --mongodir "/data/thinkbox/DeadlineDatabase10"
-                --requireSSL false)
+              command: ls /data/thinkbox | grep DeadlineRepository | (read data; /data/thinkbox/$data --mode unattended --prefix "/data/thinkbox/DeadlineRepository10" --installmongodb true --mongodir "/data/thinkbox/DeadlineDatabase10" --requireSSL false)
               ignoreErrors: true
             02-set_repo_permissions:
               command: |
@@ -197,28 +196,20 @@ Resources:
           Value: deadline-repository
         - Key: Environment
           Value: !Ref Environment
-      UserData:
-        Fn::Base64:
-          !Sub |
+      UserData: !Base64
+        Fn::Sub: |
           #!/bin/bash -xe
           # Update aws-cfn-bootstrap to the latest
           yum install -y aws-cfn-bootstrap
-
           # Install efs-utils
           yum install -y amazon-efs-utils
-
           # !!!Warning: issue with en/disabling SELinux in enforcing mode on the latest Amazon Linux 2 AMIs with version numbers 20191014 and 20191024
           # sed -i 's/enforcing/disabled/g' /etc/selinux/config /etc/selinux/config
           # sudo setenforce 0
-
           # Call cfn-init script to install files and packages
           /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource RepositoryInstance --configsets dcc_install --region ${AWS::Region}
           # Call cfn-signal script to send a signal with exit code
           /opt/aws/bin/cfn-signal --exit-code $? --stack ${AWS::StackName} --resource RepositoryInstance --region ${AWS::Region}
-    CreationPolicy:
-      ResourceSignal:
-        Count: 1
-        Timeout: "PT15M"
 
 Outputs:
   RepositoryInstancePrivateIp:

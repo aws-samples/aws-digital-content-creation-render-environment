@@ -1,4 +1,5 @@
-AWSTemplateFormatVersion: 2010-09-09
+AWSTemplateFormatVersion: "2010-09-09"
+
 Description: Provides configuration for a Deadline workstation instance.
 
 Parameters:
@@ -77,7 +78,7 @@ Resources:
                   e2label $(readlink -f /dev/xvdh) dcc-data
                   grep -q ^LABEL=dcc-data /etc/fstab || echo 'LABEL=dcc-data /data ext4 defaults' >> /etc/fstab
                   grep -q "^$(readlink -f /dev/xvdh) /data " /proc/mounts || mount /data
-              mode: '000755'
+              mode: "000755"
               owner: root
               group: root
             /opt/scripts/dns.sh:
@@ -91,14 +92,14 @@ Resources:
                     sleep 30s
                   fi
                 done
-              mode: '000755'
+              mode: "000755"
               owner: root
               group: root
             /home/ec2-user/.smbcredentials:
               content: !Sub |
                 username=ec2-user
                 password=${EC2UserPassword}
-              mode: '000400'
+              mode: "000400"
               owner: ec2-user
               group: ec2-user
             /etc/cfn/cfn-hup.conf:
@@ -107,7 +108,7 @@ Resources:
                 stack=${AWS::StackId}
                 region=${AWS::Region}
                 interval=1
-              mode: '000400'
+              mode: "000400"
               owner: root
               group: root
             /etc/cfn/hooks.d/cfn-auto-reloader.conf:
@@ -117,13 +118,13 @@ Resources:
                 path=Resources.RenderNodeLaunchTemplate.Metadata.AWS::CloudFormation::Init
                 action=/opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource RenderNodeLaunchTemplate --configsets dcc_install --region ${AWS::Region}
                 runas=root
-              mode: '000400'
+              mode: "000400"
               owner: root
               group: root
           commands:
             01-mount-ebs-volume:
               command: sh /opt/scripts/ec2-mount-ebs-volume.sh > /opt/scripts/ec2-mount-ebs-volume.log 2>&1
-              test: test -x /opt/scripts/ec2-mount-ebs-volume.sh  # check if filename exists and is executable
+              test: test -x /opt/scripts/ec2-mount-ebs-volume.sh # check if filename exists and is executable
               ignoreErrors: false
             02-wait_for_dns_propogation:
               command: sh /opt/scripts/dns.sh
@@ -201,17 +202,14 @@ Resources:
                 Value: deadline-rendernode
               - Key: Environment
                 Value: !Ref Environment
-        UserData:
-          Fn::Base64:
-            !Sub |
+        UserData: !Base64
+          Fn::Sub: |
             #!/bin/bash -xe
-
+            yum -y update
             # Update aws-cfn-bootstrap to the latest
             yum install -y aws-cfn-bootstrap
-
             # Install efs-utils
             yum install -y amazon-efs-utils
-
             # Call cfn-init script to install files and packages
             /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource RenderNodeLaunchTemplate --configsets dcc_install --region ${AWS::Region}
             # # Signal the status from instance to WaitConditionHandle
@@ -225,20 +223,20 @@ Resources:
     DependsOn: RenderNodeSpotFleet
     Properties:
       Handle: !Ref RenderNodeWaitConditionHandle
-      Timeout: '900'
-      Count: 1
+      Timeout: "1800"
+      Count: !Ref RenderNodeTargetCapacity
 
   RenderNodeSpotFleet:
     Type: AWS::EC2::SpotFleet
     Properties:
       SpotFleetRequestConfigData:
-        AllocationStrategy: 'diversified'
+        AllocationStrategy: diversified
         IamFleetRole: !Ref SpotFleetARN
         TargetCapacity: !Ref RenderNodeTargetCapacity
         LaunchTemplateConfigs:
           - LaunchTemplateSpecification:
               LaunchTemplateId: !Ref RenderNodeLaunchTemplate
-              Version: '1'
+              Version: "1"
             Overrides:
               - InstanceType: !Select [0, !Ref InstanceTypes]
                 AvailabilityZone: !Select [0, !Ref AvailabilityZones]

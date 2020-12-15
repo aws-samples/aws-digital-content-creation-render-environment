@@ -1,49 +1,50 @@
-AWSTemplateFormatVersion: '2010-09-09'
-Description: 'Provides VPC networking configuration'
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: Provides VPC networking configuration
 
 Parameters:
   AvailabilityZones:
-    Type: List<AWS::EC2::AvailabilityZone::Name>
     Description: The list of Availability Zones to use for the subnets in the VPC.
+    Type: List<AWS::EC2::AvailabilityZone::Name>
 
   VPCName:
-    Type: String
     Description: The VPC Name
+    Type: String
     Default: My VPC
 
   VPCCidr:
     Type: String
+    Default: 10.0.0.0/16
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
-    Default: 10.0.0.0/16
 
   VPCPublicSubnet1Cidr:
-    Type: String
     Description: CIDR block of Public Subnet 1
+    Type: String
+    Default: 10.0.0.0/24
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
-    Default: 10.0.0.0/24
 
   VPCPublicSubnet2Cidr:
-    Type: String
     Description: CIDR block of Public Subnet 2
+    Type: String
+    Default: 10.0.1.0/24
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
-    Default: 10.0.1.0/24
 
   VPCPrivateSubnet1Cidr:
-    Type: String
     Description: CIDR block of Private Subnet 1
+    Type: String
+    Default: 10.0.2.0/24
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
-    Default: 10.0.2.0/24
 
   VPCPrivateSubnet2Cidr:
-    Type: String
     Description: CIDR block of Private Subnet 2
+    Type: String
+    Default: 10.0.3.0/24
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
-    Default: 10.0.3.0/24
 
 Resources:
   VPC:
@@ -66,7 +67,7 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Join [ '/', [ !Ref VPCName, PublicSubnet1 ] ]
+          Value: !Join [/, [!Ref VPCName, PublicSubnet1]]
 
   VPCPublicSubnet1RouteTable:
     Type: AWS::EC2::RouteTable
@@ -74,7 +75,7 @@ Resources:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: !Join [ '/', [ !Ref VPCName, PublicSubnet1 ] ]
+          Value: !Join [/, [!Ref VPCName, PublicSubnet1]]
 
   VPCPublicSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
@@ -84,12 +85,12 @@ Resources:
 
   VPCPublicSubnet1DefaultRoute:
     Type: AWS::EC2::Route
+    DependsOn:
+      - VPCGW
     Properties:
       RouteTableId: !Ref VPCPublicSubnet1RouteTable
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref VPCIGW
-    DependsOn:
-      - VPCGW
 
   VPCPublicSubnet1EIP:
     Type: AWS::EC2::EIP
@@ -99,13 +100,11 @@ Resources:
   VPCPublicSubnet1NATGateway:
     Type: AWS::EC2::NatGateway
     Properties:
-      AllocationId: !GetAtt
-        - VPCPublicSubnet1EIP
-        - AllocationId
+      AllocationId: !GetAtt VPCPublicSubnet1EIP.AllocationId
       SubnetId: !Ref VPCPublicSubnet1Subnet
       Tags:
         - Key: Name
-          Value: !Join [ '/', [ !Ref VPCName, PublicSubnet1 ] ]
+          Value: !Join [/, [!Ref VPCName, PublicSubnet1]]
 
   VPCPublicSubnet2Subnet:
     Type: AWS::EC2::Subnet
@@ -116,7 +115,7 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Join [ '/', [ !Ref VPCName, PublicSubnet2 ] ]
+          Value: !Join [/, [!Ref VPCName, PublicSubnet2]]
 
   VPCPublicSubnet2RouteTable:
     Type: AWS::EC2::RouteTable
@@ -124,7 +123,7 @@ Resources:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: !Join [ '/', [ !Ref VPCName, PublicSubnet2 ] ]
+          Value: !Join [/, [!Ref VPCName, PublicSubnet2]]
 
   VPCPublicSubnet2RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
@@ -134,12 +133,12 @@ Resources:
 
   VPCPublicSubnet2DefaultRoute:
     Type: AWS::EC2::Route
+    DependsOn:
+      - VPCGW
     Properties:
       RouteTableId: !Ref VPCPublicSubnet2RouteTable
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref VPCIGW
-    DependsOn:
-      - VPCGW
 
   VPCPrivateSubnet1Subnet:
     Type: AWS::EC2::Subnet
@@ -150,7 +149,7 @@ Resources:
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
-          Value: !Join [ '/', [ !Ref VPCName, PrivateSubnet1 ] ]
+          Value: !Join [/, [!Ref VPCName, PrivateSubnet1]]
 
   VPCPrivateSubnet1RouteTable:
     Type: AWS::EC2::RouteTable
@@ -158,7 +157,7 @@ Resources:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: !Join [ '/', [ !Ref VPCName, PrivateSubnet1 ] ]
+          Value: !Join [/, [!Ref VPCName, PrivateSubnet1]]
 
   VPCPrivateSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
@@ -182,7 +181,7 @@ Resources:
       MapPublicIpOnLaunch: false
       Tags:
         - Key: Name
-          Value: !Join [ '/', [ !Ref VPCName, PrivateSubnet2 ] ]
+          Value: !Join [/, [!Ref VPCName, PrivateSubnet2]]
 
   VPCPrivateSubnet2RouteTable:
     Type: AWS::EC2::RouteTable
@@ -190,7 +189,7 @@ Resources:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: !Join [ '/', [ !Ref VPCName, PrivateSubnet2 ] ]
+          Value: !Join [/, [!Ref VPCName, PrivateSubnet2]]
 
   VPCPrivateSubnet2RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation

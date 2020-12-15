@@ -42,11 +42,11 @@ repos:
         files: \.(template)$
         args: [--ignore-checks=E3002, --ignore-checks=W4002]
 
-#  - repo: https://github.com/aws-cloudformation/rain
-#    rev: 46a8f63541d848c8b57c129babdd124f324fdd78
-#    hooks:
-#      - id: cfn-format
-#        files: \.template$
+  - repo: https://github.com/aws-cloudformation/rain
+    rev: 46a8f63541d848c8b57c129babdd124f324fdd78
+    hooks:
+      - id: cfn-format
+        files: \.template$
 
   # Python
   - repo: https://github.com/pycqa/pylint

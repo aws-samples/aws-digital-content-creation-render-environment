@@ -1,4 +1,5 @@
-AWSTemplateFormatVersion: 2010-09-09
+AWSTemplateFormatVersion: "2010-09-09"
+
 Description: Provides configuration for a Deadline license server instance.
 
 Parameters:
@@ -32,6 +33,10 @@ Parameters:
 
 Resources:
   LicenseServerInstance:
+    CreationPolicy:
+      ResourceSignal:
+        Count: 1
+        Timeout: PT10M
     Type: AWS::EC2::Instance
     Metadata:
       AWS::CloudFormation::Init:
@@ -51,7 +56,7 @@ Resources:
                 e2label $(readlink -f /dev/xvdh) dcc-data
                 grep -q ^LABEL=dcc-data /etc/fstab || echo 'LABEL=dcc-data /data ext4 defaults' >> /etc/fstab
                 grep -q "^$(readlink -f /dev/xvdh) /data " /proc/mounts || mount /data
-              mode: '000755'
+              mode: "000755"
               owner: root
               group: root
             /etc/cfn/cfn-hup.conf:
@@ -60,7 +65,7 @@ Resources:
                 stack=${AWS::StackId}
                 region=${AWS::Region}
                 interval=1
-              mode: '000400'
+              mode: "000400"
               owner: root
               group: root
             /etc/cfn/hooks.d/cfn-auto-reloader.conf:
@@ -70,13 +75,13 @@ Resources:
                 path=Resources.LicenseServerInstance.Metadata.AWS::CloudFormation::Init
                 action=/opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource LicenseServerInstance --configsets dcc_install --region ${AWS::Region}
                 runas=root
-              mode: '000400'
+              mode: "000400"
               owner: root
               group: root
           commands:
             01-mount-ebs-volume:
               command: sh /opt/scripts/ec2-mount-ebs-volume.sh > /opt/scripts/ec2-mount-ebs-volume.log 2>&1
-              test: test -x /opt/scripts/ec2-mount-ebs-volume.sh  # check if filename exists and is executable
+              test: test -x /opt/scripts/ec2-mount-ebs-volume.sh # check if filename exists and is executable
               ignoreErrors: false
           services:
             sysvinit:
@@ -101,10 +106,7 @@ Resources:
             01-set_permissions:
               command: chmod 500 /data/thinkbox/ThinkboxLicenseServer*
             02-install_license_server:
-              command: ls /data/thinkbox | grep ThinkboxLicenseServer |
-                (read data; /data/thinkbox/$data
-                --mode text
-                --licenseFile /data/thinkbox/license.lic)
+              command: ls /data/thinkbox | grep ThinkboxLicenseServer | (read data; /data/thinkbox/$data --mode text --licenseFile /data/thinkbox/license.lic)
               ignoreErrors: true
     Properties:
       BlockDeviceMappings:
@@ -125,9 +127,8 @@ Resources:
           Value: deadline-license-server
         - Key: Environment
           Value: !Ref Environment
-      UserData:
-        Fn::Base64:
-          !Sub |
+      UserData: !Base64
+        Fn::Sub: |
           #!/bin/bash -xe
           # Update aws-cfn-bootstrap to the latest
           yum install -y aws-cfn-bootstrap
@@ -135,10 +136,6 @@ Resources:
           /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource LicenseServerInstance --configsets dcc_install --region ${AWS::Region}
           # Call cfn-signal script to send a signal with exit code
           /opt/aws/bin/cfn-signal --exit-code $? --stack ${AWS::StackName} --resource LicenseServerInstance --region ${AWS::Region}
-    CreationPolicy:
-      ResourceSignal:
-        Count: 1
-        Timeout: "PT10M"
 
 Outputs:
   LicenseServerInstancePrivateIp:

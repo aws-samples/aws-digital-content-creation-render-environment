@@ -1,5 +1,7 @@
-AWSTemplateFormatVersion: 2010-09-09
+AWSTemplateFormatVersion: "2010-09-09"
+
 Description: Provides cross-reference for Security Groups in the ingress and egress rules.
+
 Parameters:
   VpcID:
     Type: String
@@ -15,8 +17,7 @@ Parameters:
     Type: String
 
 Conditions:
-  IsTeradici:
-    !Equals [!Ref WorkstationConnectionManager, teradici]
+  IsTeradici: !Equals [!Ref WorkstationConnectionManager, teradici]
 
 Resources:
   LicenseServerSecurityGroup:
@@ -57,38 +58,38 @@ Resources:
     Properties:
       GroupDescription: Security group for Workstation instance
       VpcId: !Ref VpcID
-      SecurityGroupIngress:
-        Fn::If:
-          - IsTeradici
-          - - IpProtocol: tcp
-              FromPort: 443
-              ToPort: 443
-              CidrIp: !Ref WorkstationAccessCIDR
-            - IpProtocol: tcp
-              FromPort: 4172
-              ToPort: 4172
-              CidrIp: !Ref WorkstationAccessCIDR
-            - IpProtocol: udp
-              FromPort: 4172
-              ToPort: 4172
-              CidrIp: !Ref WorkstationAccessCIDR
-          - - IpProtocol: tcp
-              FromPort: 8443
-              ToPort: 8443
-              CidrIp: !Ref WorkstationAccessCIDR
+      SecurityGroupIngress: !If
+        - IsTeradici
+        - - IpProtocol: tcp
+            FromPort: 443
+            ToPort: 443
+            CidrIp: !Ref WorkstationAccessCIDR
+          - IpProtocol: tcp
+            FromPort: 4172
+            ToPort: 4172
+            CidrIp: !Ref WorkstationAccessCIDR
+          - IpProtocol: udp
+            FromPort: 4172
+            ToPort: 4172
+            CidrIp: !Ref WorkstationAccessCIDR
+        - - IpProtocol: tcp
+            FromPort: 8443
+            ToPort: 8443
+            CidrIp: !Ref WorkstationAccessCIDR
       Tags:
         - Key: Name
           Value: deadline-workstation-sg
         - Key: Environment
           Value: !Ref Environment
 
-# <-- Grant access for Deadline Repository -->
+  # <-- Grant access for Deadline Repository -->
+
   RepositoryToLicenseServerIngress:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
       GroupId: !Ref LicenseServerSecurityGroup
       Description: deadline-repository-sg
-      IpProtocol: '-1'
+      IpProtocol: "-1"
       SourceSecurityGroupId: !Ref RepositorySecurityGroup
 
   RepositoryToRenderNodeIngress:
@@ -96,7 +97,7 @@ Resources:
     Properties:
       GroupId: !Ref RenderNodeSecurityGroup
       Description: deadline-repository-sg
-      IpProtocol: '-1'
+      IpProtocol: "-1"
       SourceSecurityGroupId: !Ref RepositorySecurityGroup
 
   RepositoryToWorkstationIngress:
@@ -104,16 +105,17 @@ Resources:
     Properties:
       GroupId: !Ref WorkstationSecurityGroup
       Description: deadline-repository-sg
-      IpProtocol: '-1'
+      IpProtocol: "-1"
       SourceSecurityGroupId: !Ref RepositorySecurityGroup
 
-# <-- Grant access for Deadline Render Node -->
+  # <-- Grant access for Deadline Render Node -->
+
   RenderNodeToRepositoryIngress:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
       GroupId: !Ref RepositorySecurityGroup
       Description: deadline-rendernode-sg
-      IpProtocol: '-1'
+      IpProtocol: "-1"
       SourceSecurityGroupId: !Ref RenderNodeSecurityGroup
 
   RenderNodeToWorkstationIngress:
@@ -121,7 +123,7 @@ Resources:
     Properties:
       GroupId: !Ref WorkstationSecurityGroup
       Description: deadline-rendernode-sg
-      IpProtocol: '-1'
+      IpProtocol: "-1"
       SourceSecurityGroupId: !Ref RenderNodeSecurityGroup
 
   RenderNodeToLicenseServerIngress:
@@ -129,16 +131,17 @@ Resources:
     Properties:
       GroupId: !Ref LicenseServerSecurityGroup
       Description: deadline-rendernode-sg
-      IpProtocol: '-1'
+      IpProtocol: "-1"
       SourceSecurityGroupId: !Ref RenderNodeSecurityGroup
 
-# <-- Grant access for Deadline Workstation -->
+  # <-- Grant access for Deadline Workstation -->
+
   WorkstationToRenderNodeIngress:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
       GroupId: !Ref RenderNodeSecurityGroup
       Description: deadline-workstation-sg
-      IpProtocol: '-1'
+      IpProtocol: "-1"
       SourceSecurityGroupId: !Ref WorkstationSecurityGroup
 
   WorkstationToRepositoryIngress:
@@ -146,7 +149,7 @@ Resources:
     Properties:
       GroupId: !Ref RepositorySecurityGroup
       Description: deadline-workstation-sg
-      IpProtocol: '-1'
+      IpProtocol: "-1"
       SourceSecurityGroupId: !Ref WorkstationSecurityGroup
 
   WorkstationToLicenseServerIngress:
@@ -154,7 +157,7 @@ Resources:
     Properties:
       GroupId: !Ref LicenseServerSecurityGroup
       Description: deadline-workstation-sg
-      IpProtocol: '-1'
+      IpProtocol: "-1"
       SourceSecurityGroupId: !Ref WorkstationSecurityGroup
 
 Outputs:
