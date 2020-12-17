@@ -50,7 +50,7 @@ You are responsible for the cost of the AWS services used while running this sam
 
 1. Deploy the latest CloudFormation template by following the link below for your preferred AWS region:
 
-   > It will take about 30 minutes for the deployment to finish.
+   > It will take about 30-45 minutes for the deployment to finish.
 
     |Region|Launch Template|
     |------|---------------|
