@@ -22,7 +22,7 @@ This will involve using the workstation to set up a shot to do a test render.
 
       ![install-addon.png](install-addon.png)
 
-    * Navigate to **/data/DeadlineRepository/submission/Blender/Client/**
+    * Navigate to **/mnt/efs/DeadlineRepository10/submission/Blender/Client/**
     * Choose **DeadlineBlenderClient.py**
     * Click **Install Add-on**
 

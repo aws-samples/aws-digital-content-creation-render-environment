@@ -32,3 +32,12 @@ The [Deadline Monitor](https://www.awsthinkbox.com/blog/deadline-monitor-interfa
 1. Click **Ok**.
 
 Next step is to set up [Blender plug-in](../blender/blender.md).
+
+#### Troubleshooting
+If you encounter an issue with Deadline monitor to be unable to connect to Repository, run the command below to set correct ownership on the `/mnt/efs` directory.
+
+![monitor-error](monitor-error.png)
+
+```
+sudo chown -R ec2-user:root /mnt/efs
+```
