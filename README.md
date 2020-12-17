@@ -50,7 +50,7 @@ You are responsible for the cost of the AWS services used while running this sam
 
 1. Deploy the latest CloudFormation template by following the link below for your preferred AWS region:
 
-   > It will take about 13 minutes for the deployment to finish.
+   > It will take about 30-45 minutes for the deployment to finish.
 
     |Region|Launch Template|
     |------|---------------|
@@ -119,13 +119,18 @@ To connect to workstation in Public Subnet follow the steps below:
 1. Based on Connection manager selected:
     1. *Teradici log in*:
         1. Install the Teradici PCoIP client from [Teradici Software and Mobile Clients](https://docs.teradici.com/find/product/software-and-mobile-clients)
-        1. In PCoIP client for **Host Address or Code**, paste the **WorkstationPublicIP**
-        1. **UserName**: centos
-        1. **Password**: provide same password as used in *EC2 user password* parameter.
+        1. In PCoIP client for **Host Address or Code**, paste the **WorkstationIP**
+        1. Clicke **Next**, and in pop up window confirm **Connect Insecurely**
+        1. **UserName**: ec2-user
+        1. **Password**: provide same password as used in **EC2UserPassword** parameter
+        1. Login
+           ![teradici-conn](docs/develop/teradici-conn.png)
     1. *NiceDcv log in*:
         1. On the web browser or in the [NICE DCV Client](https://download.nice-dcv.com/), paste the **WorkstationIP** address
         1. **UserName**: ec2-user
-        1. **Password**: provide same password as used in *EC2 user password* parameter.
+        1. **Password**: provide same password as used in **EC2UserPassword** parameter.
+        1. Login
+            ![dcv-conn](docs/develop/dcv-conn.png)
 
 #### Connect to Workstation deployed in Private Subnet
 To connect to workstation in Private Subnet you will need to set up VPN client.
@@ -188,7 +193,7 @@ For this part, you will use [Blender](https://www.blender.org/) to render someth
 
 Follow the instructions to:
 
-* set up [Worker Nodes](docs/deadline/workers-setup.md)
+* set up [Deadline Monitor](docs/deadline/workers-setup.md)
 * set up [Blender and submit a job](docs/blender/blender.md)
 
 ## Local Development

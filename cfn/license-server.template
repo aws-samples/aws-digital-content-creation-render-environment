@@ -91,9 +91,6 @@ Resources:
                 files:
                   - /etc/cfn/cfn-hup.conf
                   - /etc/cfn/hooks.d/cfn-auto-reloader.conf
-              amazon-ssm-agent:
-                enabled: true
-                ensureRunning: true
         artefacts_download:
           sources:
             /data/thinkbox: !Sub https://${ArtefactBucketName}.s3.amazonaws.com/ThinkboxLicenseServer-${LicenseServerVersion}-linux-x64-installer.zip
@@ -106,13 +103,17 @@ Resources:
             01-set_permissions:
               command: chmod 500 /data/thinkbox/ThinkboxLicenseServer*
             02-install_license_server:
-              command: ls /data/thinkbox | grep ThinkboxLicenseServer | (read data; /data/thinkbox/$data --mode text --licenseFile /data/thinkbox/license.lic)
+              command: |
+                ls /data/thinkbox | grep ThinkboxLicenseServer | \
+                  (read data; /data/thinkbox/$data \
+                  --mode text \
+                  --licenseFile /data/thinkbox/license.lic)
               ignoreErrors: true
     Properties:
       BlockDeviceMappings:
         - DeviceName: /dev/xvdh
           Ebs:
-            VolumeSize: 20
+            VolumeSize: 100
             VolumeType: gp2
             Encrypted: true
             DeleteOnTermination: true

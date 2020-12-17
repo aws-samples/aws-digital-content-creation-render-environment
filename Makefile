@@ -36,7 +36,6 @@ deploy: package
 	  	AvailabilityZones=$(AWS_REGION)a,$(AWS_REGION)b \
 	  	EC2UserPassword=$(EC2_USER_PASSWORD) \
 	  	RenderNodeTargetCapacity=$(RENDER_NODE_TARGET_CAPACITY) \
-	  	RenderNodeInstanceType=$(RENDER_NODE_INSTANCE_TYPE) \
 	  	WorkstationAccessCIDR=$(WORKSTATION_ACCESS_CIDR) \
 	  	WorkstationConnectionManager=$(WORKSTATION_CONNECTION_MANAGER) \
 	  	CreateVPNEndpoint=$(CREATE_VPN_ENDPOINT) \

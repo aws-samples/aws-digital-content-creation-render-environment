@@ -3,20 +3,14 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: Provides configuration for a Deadline workstation instance.
 
 Parameters:
-  AvailabilityZones:
-    Type: List<AWS::EC2::AvailabilityZone::Name>
-
   PrivateSubnet1:
-    Type: AWS::EC2::Subnet::Id
-
-  PrivateSubnet2:
     Type: AWS::EC2::Subnet::Id
 
   RenderNodeSecurityGroup:
     Type: AWS::EC2::SecurityGroup::Id
 
-  InstanceTypes:
-    Type: List<String>
+  InstanceType:
+    Type: String
 
   InstanceAMI:
     Type: AWS::EC2::Image::Id
@@ -34,9 +28,6 @@ Parameters:
     Type: String
 
   LicenseServerInstancePrivateIp:
-    Type: String
-
-  RepositoryInstancePrivateIp:
     Type: String
 
   EC2UserPassword:
@@ -95,13 +86,6 @@ Resources:
               mode: "000755"
               owner: root
               group: root
-            /home/ec2-user/.smbcredentials:
-              content: !Sub |
-                username=ec2-user
-                password=${EC2UserPassword}
-              mode: "000400"
-              owner: ec2-user
-              group: ec2-user
             /etc/cfn/cfn-hup.conf:
               content: !Sub |
                 [main]
@@ -135,18 +119,7 @@ Resources:
                 mkdir $EFS_DIRECTORY
                 echo "${EfsFileSystem}:/ $EFS_DIRECTORY efs _netdev" >> /etc/fstab
                 mount -a -t efs defaults
-            04-set-permission-on-efs:
-              command: chown -R ec2-user:root /mnt/efs
-            05-mkdir_DeadlineRepository:
-              command: mkdir -p /data/DeadlineRepository
-            06-mount_DeadlineRepository:
-              command: !Sub |
-                # create fstab entry for Deadline repository
-                echo "//${RepositoryInstancePrivateIp}/DeadlineRepository /data/DeadlineRepository cifs credentials=/home/ec2-user/.smbcredentials,uid=ec2-user 0 0" >> /etc/fstab
-                # mount the Deadline repository
-                mount -a
-              ignoreErrors: true
-            07-set_ec2_user_password:
+            04-set_ec2_user_password:
               command: !Sub echo ${EC2UserPassword} | tee - | passwd ec2-user
           services:
             sysvinit:
@@ -156,9 +129,6 @@ Resources:
                 files:
                   - /etc/cfn/cfn-hup.conf
                   - /etc/cfn/hooks.d/cfn-auto-reloader.conf
-              amazon-ssm-agent:
-                enabled: true
-                ensureRunning: true
         artefacts_download:
           sources:
             /data/thinkbox: !Sub https://${ArtefactBucketName}.s3.amazonaws.com/Deadline-${AppVersion}-linux-installers.tar
@@ -167,14 +137,14 @@ Resources:
             /usr/local: !Sub https://${ArtefactBucketName}.s3.amazonaws.com/Blender.zip
         app_install:
           commands:
-            01-install_repository:
+            05-install-client:
               command: !Sub |
                 ls /data/thinkbox | grep DeadlineClient | \
                   (read data; /data/thinkbox/$data \
                   --mode unattended \
                   --prefix "/data/thinkbox/Deadline10" \
                   --connectiontype Repository \
-                  --repositorydir "/data/DeadlineRepository" \
+                  --repositorydir "/mnt/efs/DeadlineRepository10" \
                   --licensemode Standard \
                   --licenseserver @${LicenseServerInstancePrivateIp} \
                   --launcherstartup true \
@@ -187,7 +157,7 @@ Resources:
         BlockDeviceMappings:
           - DeviceName: /dev/xvdh
             Ebs:
-              VolumeSize: 20
+              VolumeSize: 100
               VolumeType: gp2
               Encrypted: true
         ImageId: !Ref InstanceAMI
@@ -205,26 +175,12 @@ Resources:
         UserData: !Base64
           Fn::Sub: |
             #!/bin/bash -xe
-            yum -y update
             # Update aws-cfn-bootstrap to the latest
             yum install -y aws-cfn-bootstrap
             # Install efs-utils
             yum install -y amazon-efs-utils
             # Call cfn-init script to install files and packages
             /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource RenderNodeLaunchTemplate --configsets dcc_install --region ${AWS::Region}
-            # # Signal the status from instance to WaitConditionHandle
-            /opt/aws/bin/cfn-signal --success true --exit-code $? --reason "Build Process Complete" '${RenderNodeWaitConditionHandle}'
-
-  RenderNodeWaitConditionHandle:
-    Type: AWS::CloudFormation::WaitConditionHandle
-
-  RenderNodeWaitCondition:
-    Type: AWS::CloudFormation::WaitCondition
-    DependsOn: RenderNodeSpotFleet
-    Properties:
-      Handle: !Ref RenderNodeWaitConditionHandle
-      Timeout: "1800"
-      Count: !Ref RenderNodeTargetCapacity
 
   RenderNodeSpotFleet:
     Type: AWS::EC2::SpotFleet
@@ -238,12 +194,8 @@ Resources:
               LaunchTemplateId: !Ref RenderNodeLaunchTemplate
               Version: "1"
             Overrides:
-              - InstanceType: !Select [0, !Ref InstanceTypes]
-                AvailabilityZone: !Select [0, !Ref AvailabilityZones]
+              - InstanceType: !Ref InstanceType
                 SubnetId: !Ref PrivateSubnet1
-              - InstanceType: !Select [1, !Ref InstanceTypes]
-                AvailabilityZone: !Select [1, !Ref AvailabilityZones]
-                SubnetId: !Ref PrivateSubnet2
 
 Outputs:
   DeadlineVersion:

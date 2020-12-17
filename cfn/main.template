@@ -29,6 +29,19 @@ Metadata:
           - ClientCertificateArn
           - TargetNetworkCidr
       - Label:
+          default: License server configuration
+        Parameters:
+          - LicenseServerAmiId
+          - LicenseServerInstanceType
+          - LicenseServerVersion
+          - DeadlineLicense
+      - Label:
+          default: Repository and database configuration
+        Parameters:
+          - RepositoryAmiId
+          - RepositoryInstanceType
+          - AppVersion
+      - Label:
           default: Workstation configuration
         Parameters:
           - WorkstationInstanceType
@@ -37,19 +50,9 @@ Metadata:
           - WorkstationAccessCIDR
           - EC2UserPassword
       - Label:
-          default: Repository and database configuration
-        Parameters:
-          - RepositoryInstanceType
-          - AppVersion
-      - Label:
-          default: License server configuration
-        Parameters:
-          - LicenseServerInstanceType
-          - LicenseServerVersion
-          - DeadlineLicense
-      - Label:
           default: Render node configuration
         Parameters:
+          - RenderNodeAmiId
           - RenderNodeInstanceType
           - RenderNodeTargetCapacity
     ParameterLabels:
@@ -77,16 +80,20 @@ Metadata:
         default: ACM Client Certificate ARN
       TargetNetworkCidr:
         default: Target Network CIDR for VPN Endpoint
-      RepositoryInstanceType:
-        default: Render scheduler instance type
-      AppVersion:
-        default: Deadline application version
+      LicenseServerAmiId:
+        default: License server AMI ID
       LicenseServerInstanceType:
         default: License server instance type
       LicenseServerVersion:
         default: License server version
       DeadlineLicense:
         default: Deadline license key
+      RepositoryAmiId:
+        default: Render Scheduler AMI ID
+      RepositoryInstanceType:
+        default: Render scheduler instance type
+      AppVersion:
+        default: Deadline application version
       WorkstationInstanceType:
         default: Workstation instance type
       WorkstationConnectionManager:
@@ -97,6 +104,8 @@ Metadata:
         default: EC2 user password
       WorkstationAccessCIDR:
         default: Workstation access CIDR
+      RenderNodeAmiId:
+        default: Render Node AMI ID
       RenderNodeInstanceType:
         default: Render node instance type
       RenderNodeTargetCapacity:
@@ -180,6 +189,48 @@ Parameters:
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(0[0-9]|1[0-9]|2[0-9]|3[0-2]))$
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/0-32
 
+  LicenseServerAmiId:
+    Description: Latest Amazon Linux AMI Using Systems Manager Parameter Store.
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
+
+  LicenseServerInstanceType:
+    Description: The EC2 instance type for the Deadline License server.
+    Type: String
+    Default: m5.xlarge
+
+  LicenseServerVersion:
+    Description: The version of License server.
+    Type: String
+    AllowedValues:
+      - 1.1
+      - 11.13.1.2.0
+    Default: 1.1
+
+  DeadlineLicense:
+    Description: If you have license key, add it here.
+    Type: String
+    Default: 123456789012
+    NoEcho: true
+
+  RepositoryAmiId:
+    Description: Latest Amazon Linux AMI Using Systems Manager Parameter Store.
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
+
+  RepositoryInstanceType:
+    Description: The EC2 instance type for the Deadline repository.
+    Type: String
+    Default: m5.2xlarge
+
+  AppVersion:
+    Description: The version of Deadline application.
+    Type: String
+    AllowedValues:
+      - 10.1.3.6
+      - 10.0.24.4
+    Default: 10.1.3.6
+
   WorkstationInstanceType:
     Description: Artist workstation instance type.
     Type: String
@@ -218,46 +269,15 @@ Parameters:
     Type: String
     NoEcho: true
 
-  RepositoryInstanceType:
-    Description: The EC2 instance type for the Deadline repository.
-    Type: String
-    Default: m5.2xlarge
-
-  AppVersion:
-    Description: The version of Deadline application.
-    Type: String
-    AllowedValues:
-      - 10.1.3.6
-      - 10.0.24.4
-    Default: 10.1.3.6
-
-  LicenseServerInstanceType:
-    Description: The EC2 instance type for the Deadline License server.
-    Type: String
-    Default: m5.large
-
-  LicenseServerVersion:
-    Description: The version of License server.
-    Type: String
-    AllowedValues:
-      - 1.1
-      - 11.13.1.2.0
-    Default: 1.1
-
-  DeadlineLicense:
-    Description: If you have license key, add it here.
-    Type: String
-    Default: 123456789012
-    NoEcho: true
+  RenderNodeAmiId:
+    Description: Latest Amazon Linux AMI Using Systems Manager Parameter Store.
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
 
   RenderNodeInstanceType:
     Description: The EC2 instance type for the Deadline Render nodes.
-    Type: CommaDelimitedList
-    AllowedValues:
-      - c5.2xlarge,c4.2xlarge
-      - c5.4xlarge,c4.4xlarge
-      - c5.9xlarge,c4.8xlarge
-    Default: c5.4xlarge,c4.4xlarge
+    Type: String
+    Default: c5.4xlarge
 
   RenderNodeTargetCapacity:
     Description: The number of instances in the spot fleet.
@@ -284,31 +304,24 @@ Mappings:
   AMIRegionMap:
     us-east-1:
       NICEDCV: ami-07518881491131823
-      AMZL2: ami-0a887e401f7654935
       TERADICI: ami-0238c12cc43ff8477
     us-east-2:
       NICEDCV: ami-0879dc7a6c4d1e6db
-      AMZL2: ami-0e38b48473ea57778
       TERADICI: ami-08df7a7659b2dbb26
     us-west-2:
       NICEDCV: ami-002a233b37206a269
-      AMZL2: ami-0e8c04af2729ff1bb
       TERADICI: ami-0985616571f7e40e6
     ap-northeast-1:
       NICEDCV: ami-0dec805ab1bd36aba
-      AMZL2: ami-0af1df87db7b650f4
       TERADICI: ami-074d1a220856d16a9
     ap-southeast-1:
       NICEDCV: ami-0ab0206f56fc9996c
-      AMZL2: ami-0f02b24005e4aec36
       TERADICI: ami-0e788f80749a81551
     eu-central-1:
       NICEDCV: ami-03d479014c2c2f8d8
-      AMZL2: ami-0df0e7600ad0913a9
       TERADICI: ami-0092b0ea1d0684c7d
     eu-west-1:
       NICEDCV: ami-02060b15ad43c10eb
-      AMZL2: ami-099a8245f5daa82bf
       TERADICI: ami-002ad6a07b4b90413
 
 Conditions:
@@ -388,7 +401,7 @@ Resources:
         PrivateSubnet1: !GetAtt VPCStack.Outputs.PrivateSubnet1
         LicenseServerSecurityGroup: !GetAtt SecurityGroupsHelperStack.Outputs.LicenseServerSecurityGroup
         InstanceType: !Ref LicenseServerInstanceType
-        InstanceAMI: !FindInMap [AMIRegionMap, !Ref 'AWS::Region', AMZL2]
+        InstanceAMI: !Ref LicenseServerAmiId
         EC2InstanceProfile: !GetAtt IAMStack.Outputs.EC2InstanceProfile
         LicenseServerVersion: !Ref LicenseServerVersion
         DeadlineLicense: !Ref DeadlineLicense
@@ -405,41 +418,16 @@ Resources:
         RepositorySecurityGroup: !GetAtt SecurityGroupsHelperStack.Outputs.RepositorySecurityGroup
         EfsFileSystem: !GetAtt EfsStack.Outputs.EfsFileSystem
         InstanceType: !Ref RepositoryInstanceType
-        InstanceAMI: !FindInMap [AMIRegionMap, !Ref 'AWS::Region', AMZL2]
+        InstanceAMI: !Ref RepositoryAmiId
         EC2InstanceProfile: !GetAtt IAMStack.Outputs.EC2InstanceProfile
         EC2UserPassword: !Ref EC2UserPassword #pragma: allowlist secret
         AppVersion: !Ref AppVersion
         Environment: !Ref Environment
         ArtefactBucketName: !Ref ArtefactBucketName
-
-  RenderNodeStack:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: render-node.template
-      TimeoutInMinutes: 30
-      Parameters:
-        AvailabilityZones: !Join
-          - ','
-          - !Ref AvailabilityZones
-        PrivateSubnet1: !GetAtt VPCStack.Outputs.PrivateSubnet1
-        PrivateSubnet2: !GetAtt VPCStack.Outputs.PrivateSubnet2
-        RenderNodeSecurityGroup: !GetAtt SecurityGroupsHelperStack.Outputs.RenderNodeSecurityGroup
-        EfsFileSystem: !GetAtt EfsStack.Outputs.EfsFileSystem
-        InstanceTypes: !Join
-          - ','
-          - !Ref RenderNodeInstanceType
-        InstanceAMI: !FindInMap [AMIRegionMap, !Ref 'AWS::Region', AMZL2]
-        Environment: !Ref Environment
-        EC2InstanceProfile: !GetAtt IAMStack.Outputs.EC2InstanceProfile
-        SpotFleetARN: !GetAtt IAMStack.Outputs.SpotFleetARN
-        AppVersion: !Ref AppVersion
-        LicenseServerInstancePrivateIp: !GetAtt LicenseServerStack.Outputs.LicenseServerInstancePrivateIp
-        RepositoryInstancePrivateIp: !GetAtt RepositoryStack.Outputs.RepositoryInstancePrivateIp
-        EC2UserPassword: !Ref EC2UserPassword #pragma: allowlist secret
-        ArtefactBucketName: !Ref ArtefactBucketName
-        RenderNodeTargetCapacity: !Ref RenderNodeTargetCapacity
 
   WorkstationStack:
+    DependsOn:
+      - RepositoryStack
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: workstation.template
@@ -463,20 +451,43 @@ Resources:
         AppVersion: !Ref AppVersion
         Environment: !Ref Environment
         ArtefactBucketName: !Ref ArtefactBucketName
-        RepositoryInstancePrivateIp: !GetAtt RepositoryStack.Outputs.RepositoryInstancePrivateIp
         LicenseServerInstancePrivateIp: !GetAtt LicenseServerStack.Outputs.LicenseServerInstancePrivateIp
         EC2UserPassword: !Ref EC2UserPassword #pragma: allowlist secret
 
+  RenderNodeStack:
+    DependsOn: RepositoryStack
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: render-node.template
+      TimeoutInMinutes: 30
+      Parameters:
+        PrivateSubnet1: !GetAtt VPCStack.Outputs.PrivateSubnet1
+        RenderNodeSecurityGroup: !GetAtt SecurityGroupsHelperStack.Outputs.RenderNodeSecurityGroup
+        EfsFileSystem: !GetAtt EfsStack.Outputs.EfsFileSystem
+        InstanceType: !Ref RenderNodeInstanceType
+        InstanceAMI: !Ref RenderNodeAmiId
+        Environment: !Ref Environment
+        EC2InstanceProfile: !GetAtt IAMStack.Outputs.EC2InstanceProfile
+        SpotFleetARN: !GetAtt IAMStack.Outputs.SpotFleetARN
+        AppVersion: !Ref AppVersion
+        LicenseServerInstancePrivateIp: !GetAtt LicenseServerStack.Outputs.LicenseServerInstancePrivateIp
+        EC2UserPassword: !Ref EC2UserPassword #pragma: allowlist secret
+        ArtefactBucketName: !Ref ArtefactBucketName
+        RenderNodeTargetCapacity: !Ref RenderNodeTargetCapacity
+
 Outputs:
-  TemplateType:
-    Value: AWS Digital Content Creation Architecture - AWS ThinkBox Deadline.
+  ClientVpnEndpointID:
+    Value: !GetAtt ClientVPNStack.Outputs.ClientVpnEndpointID
+    Condition: CreateClientVPN
+
+  LicenseServerIPAddress:
+    Value: !GetAtt LicenseServerStack.Outputs.LicenseServerInstancePrivateIp
+
+  RenderSchedulerIPAddress:
+    Value: !GetAtt RepositoryStack.Outputs.RepositoryInstancePrivateIp
 
   WorkstationIP:
     Value: !If
       - IsTeradici
       - !GetAtt WorkstationStack.Outputs.WorkstationIP
       - !Join ["", ['https://', !GetAtt WorkstationStack.Outputs.WorkstationIP, ':8443']]
-
-  ClientVpnEndpointID:
-    Value: !GetAtt ClientVPNStack.Outputs.ClientVpnEndpointID
-    Condition: CreateClientVPN

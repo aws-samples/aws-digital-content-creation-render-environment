@@ -39,7 +39,7 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Count: 1
-        Timeout: PT15M
+        Timeout: PT30M
     Type: AWS::EC2::Instance
     Metadata:
       AWS::CloudFormation::Init:
@@ -48,7 +48,6 @@ Resources:
             - instance_prep
             - artefacts_download
             - app_install
-            - post_install
         instance_prep:
           packages:
             yum:
@@ -80,29 +79,6 @@ Resources:
               mode: "000755"
               owner: root
               group: root
-            /etc/samba/smb.conf:
-              content: |
-                [global]
-                  workgroup = SAMBA
-                  security = user
-                  passdb backend = tdbsam
-                  printing = cups
-                  printcap name = cups
-                  load printers = yes
-                  cups options = raw
-                  # log files split per-machine:
-                  log file = /var/log/samba/log.%m
-                  # maximum size of 50KB per log file, then rotate:
-                  max log size = 50
-                [DeadlineRepository]
-                  path = /data/thinkbox/DeadlineRepository10
-                  writeable = Yes
-                  guest ok = No
-                  create mask = 0700
-                  force create mode = 0700
-                  force directory mode = 0700
-                  unix extensions = No
-              mode: "000755"
             /etc/cfn/cfn-hup.conf:
               content: !Sub |
                 [main]
@@ -136,52 +112,42 @@ Resources:
                 mkdir $EFS_DIRECTORY
                 echo "${EfsFileSystem}:/ $EFS_DIRECTORY efs _netdev" >> /etc/fstab
                 mount -a -t efs defaults
-            04-set-permission-on-efs:
-              command: chown -R ec2-user:root /mnt/efs
-            05-samba_user:
-              command: !Sub echo ${EC2UserPassword} | tee - | smbpasswd -s -a ec2-user
+            04-set-ec2-user-password:
+              command: !Sub echo ${EC2UserPassword} | tee - | passwd ec2-user
           services:
             sysvinit:
-              smb:
-                enabled: true
-                ensureRunning: true
-                files:
-                  - /etc/samba/smb.conf
               cfn-hup:
                 enabled: true
                 ensureRunning: true
                 files:
                   - /etc/cfn/cfn-hup.conf
                   - /etc/cfn/hooks.d/cfn-auto-reloader.conf
-              amazon-ssm-agent:
-                enabled: true
-                ensureRunning: true
         artefacts_download:
           sources:
             /data/thinkbox: !Sub https://${ArtefactBucketName}.s3.amazonaws.com/Deadline-${AppVersion}-linux-installers.tar
         app_install:
           commands:
-            01-install_repository:
-              command: ls /data/thinkbox | grep DeadlineRepository | (read data; /data/thinkbox/$data --mode unattended --prefix "/data/thinkbox/DeadlineRepository10" --installmongodb true --mongodir "/data/thinkbox/DeadlineDatabase10" --requireSSL false)
-              ignoreErrors: true
-            02-set_repo_permissions:
+            05-install_repository:
               command: |
-                chown -R ec2-user:nobody /data/thinkbox/DeadlineRepository10
-                chmod -R 500 /data/thinkbox/DeadlineRepository10
-                cd /data/thinkbox/DeadlineRepository10 && chmod -R 700 jobs/ jobsArchived/ reports/
-              ignoreErrors: false
-        post_install:
-          sources:
-            /mnt/efs/assets: !Sub https://${ArtefactBucketName}.s3.amazonaws.com/BMW27_2.blend.zip
-          commands:
-            01-set-assets-folder-permissions:
-              command: chown -R ec2-user:root /mnt/efs/assets
+                ls /data/thinkbox | grep DeadlineRepository | \
+                  (read data; /data/thinkbox/$data \
+                  --mode unattended \
+                  --prefix "/mnt/efs/DeadlineRepository10" \
+                  --installmongodb true \
+                  --mongodir "/opt/Thinkbox/DeadlineDatabase10" \
+                  --requireSSL false)
               ignoreErrors: true
+            07-set_repo_permissions:
+              command: |
+                chown -R ec2-user:nobody /mnt/efs/DeadlineRepository10
+                chmod -R 505 /mnt/efs/DeadlineRepository10
+                cd /mnt/efs/DeadlineRepository10 && chmod -R 707 jobs/ jobsArchived/ reports/
+              ignoreErrors: false
     Properties:
       BlockDeviceMappings:
         - DeviceName: /dev/xvdh
           Ebs:
-            VolumeSize: 35
+            VolumeSize: 100
             VolumeType: gp2
             Encrypted: true
             DeleteOnTermination: true
