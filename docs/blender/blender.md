@@ -36,7 +36,7 @@ This will involve using the workstation to set up a shot to do a test render.
 
 1. For your test render, you can just use the default blender file with a cube and camera (this is just a test to make sure everything is working correctly. Later on you will make a super fancy file, using Blender Demo library.)
 1. Set your output settings:
-    * In the **Properties** Panel on the right, click on **Render Properties** (the icon looks like an old-timey television)
+    * In the **Properties** Panel on the right, click on **Render Properties**
     * For **Render Engine** choose **Cycles**
 
       ![blender-scene.png](blender-scene.png)

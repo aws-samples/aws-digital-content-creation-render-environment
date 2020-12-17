@@ -426,9 +426,9 @@ Resources:
         ArtefactBucketName: !Ref ArtefactBucketName
 
   WorkstationStack:
+    Type: AWS::CloudFormation::Stack
     DependsOn:
       - RepositoryStack
-    Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: workstation.template
       TimeoutInMinutes: 30
@@ -455,8 +455,8 @@ Resources:
         EC2UserPassword: !Ref EC2UserPassword #pragma: allowlist secret
 
   RenderNodeStack:
-    DependsOn: RepositoryStack
     Type: AWS::CloudFormation::Stack
+    DependsOn: RepositoryStack
     Properties:
       TemplateURL: render-node.template
       TimeoutInMinutes: 30

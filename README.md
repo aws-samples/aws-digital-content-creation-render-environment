@@ -1,10 +1,10 @@
 # AWS Digital Content Creation Render Environment (Linux Workstation)
 
-[![Build Status](https://travis-ci.org/aws-samples/aws-digital-content-creation-render-environment.svg?branch=master)](https://travis-ci.org/aws-samples/aws-digital-content-creation-render-environment)
+[![Build Status](https://github.com/aws-samples/aws-digital-content-creation-render-environment/workflows/Publish%20Version/badge.svg)](https://github.com/aws-samples/aws-digital-content-creation-render-environment/actions)
 
 This solution deploys an AWS Cloud environment that helps media and entertainment organizations with burst rendering workloads. This CloudFormation template will deploy and setup [AWS ThinkBox Deadline](https://www.awsthinkbox.com/deadline) Database and Repository, Workstation, License Server, and Render nodes.
 
-The solution can deploy either Teradici PCoIP or NiceDCV Linux AMI workstation. Also there is an option to place workstation in a Private subnet and connect to it via AWS ClientVpn.
+The solution can deploy either Teradici PCoIP or NiceDCV Linux AMI workstation. Also, there is an option to place workstation in a Private subnet and connect to it via AWS ClientVpn.
 
 Furthermore, the solution comes with [Blender](https://www.blender.org/) installation scripts, which is a popular open-source software for 3D modeling, animation, rendering and more...
 
@@ -38,7 +38,7 @@ Furthermore, the solution comes with [Blender](https://www.blender.org/) install
 
 ### Prerequisites
 1. To deploy the application you will require an AWS account. If you don’t already have an AWS account, create one at <https://aws.amazon.com> by following the on-screen instructions. Your access to the AWS account must have IAM permissions to launch AWS CloudFormation templates that create IAM roles.
-1. If deploying an [AWS Client VPN](https://docs.aws.amazon.com/vpn/latest/clientvpn-user/client-vpn-user-what-is.html) endpoint. You must generate a server/client certificate and upload those certificates to [AWS Certificate Manager](https://docs.aws.amazon.com/acm/latest/userguide/acm-overview.html). Click [here](https://docs.aws.amazon.com/vpn/latest/clientvpn-admin/client-authentication.html#mutual) and follow the instructions in Mutual authentication to create  client and server certificates.
+1. If deploying an [AWS Client VPN](https://docs.aws.amazon.com/vpn/latest/clientvpn-user/client-vpn-user-what-is.html) endpoint. You must generate a server/client certificate and upload those certificates to [AWS Certificate Manager](https://docs.aws.amazon.com/acm/latest/userguide/acm-overview.html). Click [here](https://docs.aws.amazon.com/vpn/latest/clientvpn-admin/client-authentication.html#mutual) and follow the instructions in Mutual authentication to create a client and server certificates.
 1. Configuration to AWS Client VPN is done via [AWS CLI](https://aws.amazon.com/cli/). You need to [install](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html) and [configure](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) AWS CLI if you are planning to use Client VPN.
 
 ### Deployment
@@ -120,7 +120,7 @@ To connect to workstation in Public Subnet follow the steps below:
     1. *Teradici log in*:
         1. Install the Teradici PCoIP client from [Teradici Software and Mobile Clients](https://docs.teradici.com/find/product/software-and-mobile-clients)
         1. In PCoIP client for **Host Address or Code**, paste the **WorkstationIP**
-        1. Clicke **Next**, and in pop up window confirm **Connect Insecurely**
+        1. Click **Next**, and in pop up window confirm **Connect Insecurely**
         1. **UserName**: ec2-user
         1. **Password**: provide same password as used in **EC2UserPassword** parameter
         1. Login
@@ -221,7 +221,7 @@ You can modify the `taskcat` configuration file with your own tests here [.taskc
 
 Follow these steps to clean up created resources:
 
-1. In the **[CloudFormation console](https://console.aws.amazon.com/cloudformation)**, select the the **root** stack you have created. For example `aws-digital-content-creation-render-environment `.
+1. In the **[CloudFormation console](https://console.aws.amazon.com/cloudformation)**, select the **root** stack you have created. For example `aws-digital-content-creation-render-environment `.
 1. The **root** stack will handle the deletion of all the **children** stacks for you.
 1. In the top right corner, click on **Delete**.
 1. In the pop up window click on **Delete stack**.
