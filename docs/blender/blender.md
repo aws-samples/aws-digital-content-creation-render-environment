@@ -3,7 +3,7 @@
 This will involve using the workstation to set up a shot to do a test render.
 
 1. Log into your **Workstation** using **ec2-user** user account.
-1. Open the terminal and create a `test_project` folder in **projects** directory `/data/DeadlineRepository/jobs/`
+1. Open the terminal and create a `test_project` folder in **projects** directory `/mnt/efs/test_project`
 
    ```
    mkdir -p  /mnt/efs/test_project

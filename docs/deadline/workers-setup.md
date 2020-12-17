@@ -1,4 +1,6 @@
-## Set up Deadline render nodes
+## Setup Deadline Monitor
+The [Deadline Monitor](https://www.awsthinkbox.com/blog/deadline-monitor-interface-customization) is your main entry point for overseeing and managing your render farm. It's a powerful application that allows you to view, configure, and interact with the many of the moving parts that make up Deadline.
+
 #### Launch the Monitor
 
 `Applications -> Other -> Deadline Monitor 10`
