@@ -303,26 +303,26 @@ Parameters:
 Mappings:
   AMIRegionMap:
     us-east-1:
-      NICEDCV: ami-07518881491131823
-      TERADICI: ami-0238c12cc43ff8477
+      NICEDCV: ami-0ccebe9331a40d07e
+      TERADICI: ami-0e895052ddc54bb63
     us-east-2:
-      NICEDCV: ami-0879dc7a6c4d1e6db
-      TERADICI: ami-08df7a7659b2dbb26
+      NICEDCV: ami-05c85de49cdb0ce40
+      TERADICI: ami-0bd8ecd5704337970
     us-west-2:
-      NICEDCV: ami-002a233b37206a269
-      TERADICI: ami-0985616571f7e40e6
+      NICEDCV: ami-019ff0a55b514e755
+      TERADICI: ami-0b4e0e6cb3e9e82e5
     ap-northeast-1:
-      NICEDCV: ami-0dec805ab1bd36aba
-      TERADICI: ami-074d1a220856d16a9
+      NICEDCV: ami-0a651db9a351a96a6
+      TERADICI: ami-0238d8c867840b4a3
     ap-southeast-1:
-      NICEDCV: ami-0ab0206f56fc9996c
-      TERADICI: ami-0e788f80749a81551
+      NICEDCV: ami-05a42cd504e9d2f85
+      TERADICI: ami-0377ce14385dde95a
     eu-central-1:
-      NICEDCV: ami-03d479014c2c2f8d8
-      TERADICI: ami-0092b0ea1d0684c7d
+      NICEDCV: ami-0aa4f904d736d1114
+      TERADICI: ami-0d7832ef57eb4f50b
     eu-west-1:
-      NICEDCV: ami-02060b15ad43c10eb
-      TERADICI: ami-002ad6a07b4b90413
+      NICEDCV: ami-0547e6987ff6a09e6
+      TERADICI: ami-0cc05ee0e4c836c97
 
 Conditions:
   CreateClientVPN: !Equals [!Ref CreateVPNEndpoint, true]
