@@ -302,27 +302,51 @@ Parameters:
 
 Mappings:
   AMIRegionMap:
+    eu-north-1:
+      NICEDCV: ami-0bdfd5a2e10328d8d
+      TERADICI: ami-0ab314a4778b8f334
+    ap-south-1:
+      NICEDCV: ami-0c2a5e20ed035feca
+      TERADICI: ami-0a087b5315aec2a38
+    eu-west-3:
+      NICEDCV: ami-04e9155e27944d4e0
+      TERADICI: ami-0575fa8f425ca91b4
+    eu-west-2:
+      NICEDCV: ami-045be6886a93c8130
+      TERADICI: ami-09b559de08f3663c6
+    eu-west-1:
+      NICEDCV: ami-0547e6987ff6a09e6
+      TERADICI: ami-0cc05ee0e4c836c97
+    ap-northeast-2:
+      NICEDCV: ami-0a8e306e2265fbd90
+      TERADICI: ami-0b63c000dc6b2b9a3
+    ap-northeast-1:
+      NICEDCV: ami-0a651db9a351a96a6
+      TERADICI: ami-0238d8c867840b4a3
+    sa-east-1:
+      NICEDCV: ami-0bebd725a3c8b578f
+      TERADICI: ami-03ee2f9fce0ea4c80
+    ap-southeast-1:
+      NICEDCV: ami-05a42cd504e9d2f85
+      TERADICI: ami-0377ce14385dde95a
+    ap-southeast-2:
+      NICEDCV: ami-0b0154d9daba62781
+      TERADICI: ami-0a535b9dbf5527d00
+    eu-central-1:
+      NICEDCV: ami-0aa4f904d736d1114
+      TERADICI: ami-0d7832ef57eb4f50b
     us-east-1:
       NICEDCV: ami-05f5825affeec78e9
       TERADICI: ami-0e895052ddc54bb63
     us-east-2:
       NICEDCV: ami-05c85de49cdb0ce40
       TERADICI: ami-0bd8ecd5704337970
+    us-west-1:
+      NICEDCV: ami-0af3c3830a0d0d567
+      TERADICI: ami-0c118e5bf07d4c8cc
     us-west-2:
       NICEDCV: ami-019ff0a55b514e755
       TERADICI: ami-0b4e0e6cb3e9e82e5
-    ap-northeast-1:
-      NICEDCV: ami-0a651db9a351a96a6
-      TERADICI: ami-0238d8c867840b4a3
-    ap-southeast-1:
-      NICEDCV: ami-05a42cd504e9d2f85
-      TERADICI: ami-0377ce14385dde95a
-    eu-central-1:
-      NICEDCV: ami-0aa4f904d736d1114
-      TERADICI: ami-0d7832ef57eb4f50b
-    eu-west-1:
-      NICEDCV: ami-0547e6987ff6a09e6
-      TERADICI: ami-0cc05ee0e4c836c97
 
 Conditions:
   CreateClientVPN: !Equals [!Ref CreateVPNEndpoint, true]
