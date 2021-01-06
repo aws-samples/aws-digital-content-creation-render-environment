@@ -8,6 +8,8 @@ The solution can deploy either Teradici PCoIP or NiceDCV Linux AMI workstation. 
 
 Furthermore, the solution comes with [Blender](https://www.blender.org/) installation scripts, which is a popular open-source software for 3D modeling, animation, rendering and more...
 
+> Note: For Windows Render environment refer to this solution [AWS Content Creation Render Environment for Windows](https://github.com/aws-samples/aws-content-creation-render-environment-for-windows)
+
 ## Index
 
 - [Architecture](#architecture)
@@ -40,7 +42,15 @@ Furthermore, the solution comes with [Blender](https://www.blender.org/) install
 1. To deploy the application you will require an AWS account. If you don’t already have an AWS account, create one at <https://aws.amazon.com> by following the on-screen instructions. Your access to the AWS account must have IAM permissions to launch AWS CloudFormation templates that create IAM roles.
 1. If deploying an [AWS Client VPN](https://docs.aws.amazon.com/vpn/latest/clientvpn-user/client-vpn-user-what-is.html) endpoint. You must generate a server/client certificate and upload those certificates to [AWS Certificate Manager](https://docs.aws.amazon.com/acm/latest/userguide/acm-overview.html). Click [here](https://docs.aws.amazon.com/vpn/latest/clientvpn-admin/client-authentication.html#mutual) and follow the instructions in Mutual authentication to create a client and server certificates.
 1. Configuration to AWS Client VPN is done via [AWS CLI](https://aws.amazon.com/cli/). You need to [install](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html) and [configure](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) AWS CLI if you are planning to use Client VPN.
-
+1. The solution is using instance AMI from AWS Marketplace. To be able to deploy the infrastructure, you need to subscribe and confirm T&C for particular AMI on the marketplace.
+    1. To subscribe for Teradici Cloud Access Software for CentOS 7 click [here](https://aws.amazon.com/marketplace/pp/B07CT11PCQ)
+        - In the top right corner click on **Continue to Subscribe**
+          ![teradici-subscription](docs/develop/teradici-subscription.png)
+        - Log in to your AWS account
+        - Accept Terms and wait for subscription to activate
+    1. Subscription for Nice DCV are not required and licensing is free of charge if running DCV server on EC2 instance.
+        - [Link to marketplace](https://aws.amazon.com/marketplace/pp/B07XLPJWM6)
+          ![dcv-subscription](docs/develop/dcv-subscription.png)
 ### Deployment
 
 The environment is deployed as an [AWS CloudFormation](https://aws.amazon.com/cloudformation) template.

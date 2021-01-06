@@ -303,7 +303,7 @@ Parameters:
 Mappings:
   AMIRegionMap:
     us-east-1:
-      NICEDCV: ami-0ccebe9331a40d07e
+      NICEDCV: ami-05f5825affeec78e9
       TERADICI: ami-0e895052ddc54bb63
     us-east-2:
       NICEDCV: ami-05c85de49cdb0ce40
