@@ -79,14 +79,14 @@ Resources:
           files:
             /sbin/ebsnvme-id: !If
               - IsTeradici
-              - source: https://raw.githubusercontent.com/aws-samples/aws-digital-content-creation-render-environment/rezabekf/develop/scripts/ebsnvme-id
+              - source: https://raw.githubusercontent.com/aws-samples/aws-digital-content-creation-render-environment/master/develop/scripts/ebsnvme-id
                 mode: "000755"
                 owner: root
                 group: root
               - !Ref AWS::NoValue
             /etc/udev/rules.d/70-ec2-nvme-devices.rules: !If
               - IsTeradici
-              - source: https://raw.githubusercontent.com/aws-samples/aws-digital-content-creation-render-environment/rezabekf/develop/scripts/70-ec2-nvme-devices.rules
+              - source: https://raw.githubusercontent.com/aws-samples/aws-digital-content-creation-render-environment/master/develop/scripts/70-ec2-nvme-devices.rules
                 mode: "000755"
                 owner: root
                 group: root
