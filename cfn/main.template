@@ -360,13 +360,11 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: iam.template
-      TimeoutInMinutes: 10
 
   VPCStack:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: vpc.template
-      TimeoutInMinutes: 20
       Parameters:
         AvailabilityZones: !Join
           - ','
@@ -395,7 +393,6 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: security-groups-helper.template
-      TimeoutInMinutes: 10
       Parameters:
         VpcID: !GetAtt VPCStack.Outputs.VpcID
         WorkstationAccessCIDR: !Ref WorkstationAccessCIDR
@@ -406,7 +403,6 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: efs.template
-      TimeoutInMinutes: 20
       Parameters:
         VpcID: !GetAtt VPCStack.Outputs.VpcID
         PrivateSubnet1: !GetAtt VPCStack.Outputs.PrivateSubnet1
@@ -420,7 +416,6 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: license-server.template
-      TimeoutInMinutes: 30
       Parameters:
         PrivateSubnet1: !GetAtt VPCStack.Outputs.PrivateSubnet1
         LicenseServerSecurityGroup: !GetAtt SecurityGroupsHelperStack.Outputs.LicenseServerSecurityGroup
@@ -436,7 +431,6 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: repository.template
-      TimeoutInMinutes: 30
       Parameters:
         PrivateSubnet1: !GetAtt VPCStack.Outputs.PrivateSubnet1
         RepositorySecurityGroup: !GetAtt SecurityGroupsHelperStack.Outputs.RepositorySecurityGroup
@@ -455,7 +449,6 @@ Resources:
       - RepositoryStack
     Properties:
       TemplateURL: workstation.template
-      TimeoutInMinutes: 30
       Parameters:
         SubnetID: !If
           - CreateClientVPN
@@ -483,7 +476,6 @@ Resources:
     DependsOn: RepositoryStack
     Properties:
       TemplateURL: render-node.template
-      TimeoutInMinutes: 30
       Parameters:
         PrivateSubnet1: !GetAtt VPCStack.Outputs.PrivateSubnet1
         RenderNodeSecurityGroup: !GetAtt SecurityGroupsHelperStack.Outputs.RenderNodeSecurityGroup
