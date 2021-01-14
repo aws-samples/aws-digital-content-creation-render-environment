@@ -3,7 +3,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: AWS Digital Content Creation Architecture - AWS ThinkBox Deadline. (uksb-1qgdqu75l)
 
 Metadata:
-  Version: 1.6.4
+  Version: 1.6.5
 
   AWS::CloudFormation::Interface:
     ParameterGroups:
