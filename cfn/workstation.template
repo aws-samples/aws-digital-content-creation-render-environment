@@ -191,11 +191,9 @@ Resources:
                 files:
                   - /etc/cfn/cfn-hup.conf
                   - /etc/cfn/hooks.d/cfn-auto-reloader.conf
-              amazon-ssm-agent: !If
-                - IsTeradici
-                - enabled: true
-                  ensureRunning: true
-                - !Ref AWS::NoValue
+              amazon-ssm-agent:
+                enabled: true
+                ensureRunning: true
         artefacts_download:
           sources:
             /data/thinkbox: !Sub https://${ArtefactBucketName}.s3.amazonaws.com/Deadline-${AppVersion}-linux-installers.tar
